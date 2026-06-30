@@ -237,6 +237,27 @@
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px;width:340px;max-width:90vw;">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:28px;margin-bottom:6px">🔐</div>
+      <div style="font-size:18px;font-weight:700">AFS IT System</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">Restricted access — authorized personnel only</div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="login-user" placeholder="Enter username" style="width:100%">
+    </div>
+    <div class="form-group" style="margin-bottom:18px">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="login-pass" placeholder="Enter password" style="width:100%" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="doLogin()">Sign In</button>
+    <div id="login-error" style="color:var(--red);font-size:12px;margin-top:10px;text-align:center;display:none">Incorrect username or password</div>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
@@ -273,6 +294,8 @@
       <div class="topbar-sub" id="page-sub">Overview of AFS IT assets and maintenance</div>
     </div>
     <div class="topbar-right">
+      <span id="sync-status" style="font-size:12px;color:var(--text2)">●  Local only</span>
+      <button class="btn btn-secondary" onclick="syncFromSheets()">🔄 Sync</button>
       <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
       <button class="btn btn-primary" id="add-btn" onclick="openAddModal()">+ Add Record</button>
     </div>
@@ -283,25 +306,25 @@
     <!-- DASHBOARD PAGE -->
     <div class="page active" id="page-dashboard">
       <div class="stat-grid">
-        <div class="stat-card blue">
+        <div class="stat-card blue" style="cursor:pointer" onclick="dashboardFilter('inventory','status','')">
           <div class="stat-icon">🖥️</div>
           <div class="stat-label">Total Devices</div>
           <div class="stat-value" id="stat-total">0</div>
           <div class="stat-sub">Across both branches</div>
         </div>
-        <div class="stat-card green">
+        <div class="stat-card green" style="cursor:pointer" onclick="dashboardFilter('inventory','status','OK')">
           <div class="stat-icon">✅</div>
           <div class="stat-label">Operational</div>
           <div class="stat-value" id="stat-ok">0</div>
           <div class="stat-sub">Status: OK</div>
         </div>
-        <div class="stat-card red">
+        <div class="stat-card red" style="cursor:pointer" onclick="dashboardFilter('inventory','status','Need Repair')">
           <div class="stat-icon">⚠️</div>
           <div class="stat-label">Need Attention</div>
           <div class="stat-value" id="stat-issues">0</div>
           <div class="stat-sub">Repair / Check needed</div>
         </div>
-        <div class="stat-card yellow">
+        <div class="stat-card yellow" style="cursor:pointer" onclick="dashboardFilter('maintenance','status','Pending')">
           <div class="stat-icon">🔧</div>
           <div class="stat-label">Work Orders</div>
           <div class="stat-value" id="stat-wo">0</div>
@@ -898,6 +921,22 @@ function showPage(page) {
   else if (page === 'transfer') { transPage = 1; renderTransfer(); }
 }
 
+// Click-through filters from Dashboard into list pages
+function dashboardFilter(page, field, value) {
+  showPage(page);
+  if (page === 'inventory') {
+    document.getElementById('inv-search').value = '';
+    document.getElementById('inv-filter-type').value = field === 'item' ? value : '';
+    document.getElementById('inv-filter-status').value = field === 'status' ? value : '';
+    document.getElementById('inv-filter-loc').value = field === 'location' ? value : '';
+    invPage = 1; renderInventory();
+  } else if (page === 'maintenance') {
+    document.getElementById('maint-search').value = '';
+    document.getElementById('maint-filter-status').value = field === 'status' ? value : '';
+    maintPage = 1; renderMaintenance();
+  }
+}
+
 // ============================================================
 // DASHBOARD
 // ============================================================
@@ -917,7 +956,7 @@ function renderDashboard() {
   const maxS = Math.max(...Object.values(statusCounts));
   const statusColors = { 'OK': '#22c55e', 'Need Repair': '#ef4444', 'Need to check': '#f59e0b', 'Severe blur': '#f97316' };
   document.getElementById('status-chart').innerHTML = Object.entries(statusCounts).map(([k, v]) =>
-    `<div class="bar-row">
+    `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','status','${k}')">
       <div class="bar-label">${k}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100)}%;background:${statusColors[k]||'#4f8ef7'}">${v}</div></div>
       <div class="bar-count">${v}</div>
@@ -930,7 +969,7 @@ function renderDashboard() {
   const maxL = Math.max(...Object.values(locCounts));
   const locColors = ['#4f8ef7','#7c5af7','#22c55e','#f59e0b'];
   document.getElementById('location-chart').innerHTML = Object.entries(locCounts).map(([k, v], i) =>
-    `<div class="bar-row">
+    `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','location','${k}')">
       <div class="bar-label">${k}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxL*100)}%;background:${locColors[i%locColors.length]}">${v}</div></div>
       <div class="bar-count">${v}</div>
@@ -942,7 +981,7 @@ function renderDashboard() {
   inventory.forEach(i => { typeCounts[i.item] = (typeCounts[i.item] || 0) + 1; });
   const maxT = Math.max(...Object.values(typeCounts));
   document.getElementById('type-chart').innerHTML = Object.entries(typeCounts).map(([k, v], i) =>
-    `<div class="bar-row">
+    `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','item','${k}')">
       <div class="bar-label">${k}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100)}%;background:#4f8ef7">${v}</div></div>
       <div class="bar-count">${v}</div>
@@ -1091,6 +1130,7 @@ function saveInventory() {
   }
   closeModal('modal-inventory');
   renderInventory();
+  pushToSheets();
 }
 
 // ============================================================
@@ -1172,9 +1212,37 @@ function saveMaintenance() {
     maintenance.push({ id: nextMaintId++, ...obj });
     showToast('Work order added', 'success');
   }
+  syncInventoryStatusFromWorkOrder(device, obj.status);
   closeModal('modal-maintenance');
   renderMaintenance();
+  renderInventory();
+  pushToSheets();
 }
+
+// Keep Inventory status in sync with the linked Work Order's status.
+// Pending/In Progress -> "Need Repair". Completed -> "OK" (unless another
+// open work order still references the same device).
+function syncInventoryStatusFromWorkOrder(deviceCode, woStatus) {
+  const item = inventory.find(i => i.code === deviceCode);
+  if (!item) return; // device code didn't match an inventory item (e.g. multi-device WO) - skip silently
+  if (woStatus === 'Pending' || woStatus === 'In Progress') {
+    item.status = 'Need Repair';
+  } else if (woStatus === 'Completed') {
+    const stillOpen = maintenance.some(m => m.device === deviceCode && m.status !== 'Completed');
+    if (!stillOpen) item.status = 'OK';
+  }
+}
+
+// Autofill device description when a known device code is typed into the WO form
+document.addEventListener('DOMContentLoaded', () => {
+  const deviceInput = document.getElementById('maint-device');
+  if (deviceInput) {
+    deviceInput.addEventListener('blur', () => {
+      const match = inventory.find(i => i.code === deviceInput.value.trim());
+      if (match) document.getElementById('maint-desc').value = match.item;
+    });
+  }
+});
 
 // ============================================================
 // TRANSFER
@@ -1254,6 +1322,7 @@ function saveTransfer() {
   }
   closeModal('modal-transfer');
   renderTransfer();
+  pushToSheets();
 }
 
 // ============================================================
@@ -1276,6 +1345,7 @@ function confirmDelete() {
   if (type === 'inventory') renderInventory();
   else if (type === 'maintenance') renderMaintenance();
   else renderTransfer();
+  pushToSheets();
 }
 
 // ============================================================
@@ -1337,9 +1407,138 @@ function showToast(msg, type = 'success') {
 }
 
 // ============================================================
+// LOGIN (simple front-door gate — see note below on security level)
+// ============================================================
+// Change these to your own credentials before sharing the file.
+const APP_USERNAME = "hafiz";
+const APP_PASSWORD = "070216";
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (u === APP_USERNAME && p === APP_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    sessionStorage.setItem('afs_logged_in', '1');
+    init();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+// ============================================================
+// GOOGLE SHEETS BRIDGE
+// ============================================================
+// 1. Paste the Web App URL you got from Apps Script deployment below.
+// 2. Paste the SAME secret key you set inside the Apps Script (SECRET_KEY).
+// Keep this file private once these are filled in — anyone with the file
+// AND the key could read/write your sheet.
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwdZ0dkQJnYJsmIXVhT9VqP5oZ9SRCX-9OznIYWeq0C__-aA_hmrrGEV2lI_DQa93_M/exec";
+const SHEETS_KEY = "AFadmin1";
+
+function setSyncStatus(text, color) {
+  const el = document.getElementById('sync-status');
+  if (el) { el.textContent = '●  ' + text; el.style.color = color || 'var(--text2)'; }
+}
+
+async function syncFromSheets() {
+  if (!SHEETS_URL || SHEETS_KEY === "AFadmin1") {
+    showToast('Google Sheets not connected yet', 'error');
+    return;
+  }
+  setSyncStatus('Syncing...', 'var(--yellow)');
+  try {
+    const [invRes, maintRes, transRes] = await Promise.all([
+      fetch(`${SHEETS_URL}?action=read&sheet=Inventory&key=${SHEETS_KEY}`).then(r => r.json()),
+      fetch(`${SHEETS_URL}?action=read&sheet=Maintenance&key=${SHEETS_KEY}`).then(r => r.json()),
+      fetch(`${SHEETS_URL}?action=read&sheet=Transfer&key=${SHEETS_KEY}`).then(r => r.json()),
+    ]);
+    if (invRes.data && invRes.data.length) {
+      inventory = invRes.data.map(r => ({
+        id: Number(r.ID), no: Number(r.No), owner: r.Owner, code: r.Code, location: r.Location,
+        item: r.Item, desc1: r.Desc1, desc2: r.Desc2, desc3: r.Desc3, desc4: r.Desc4, desc5: r.Desc5,
+        status: r.Status, remark: r.Remark
+      }));
+      nextInvId = Math.max(...inventory.map(i => i.id), 0) + 1;
+    }
+    if (maintRes.data && maintRes.data.length) {
+      maintenance = maintRes.data.map(r => ({
+        id: Number(r.ID), wo: r.WO, dateCheck: r.DateCheck, device: r.Device, desc: r.Desc,
+        issue: r.Issue, findings: r.Findings, recommendation: r.Recommendation, status: r.Status, dateComplete: r.DateComplete
+      }));
+      nextMaintId = Math.max(...maintenance.map(m => m.id), 0) + 1;
+    }
+    if (transRes.data && transRes.data.length) {
+      transfers = transRes.data.map(r => ({
+        id: Number(r.ID), no: Number(r.No), date: r.Date, code: r.Code, from: r.From, to: r.To,
+        pic: r.PIC, reason: r.Reason, auth: r.Auth, remark: r.Remark
+      }));
+      nextTransId = Math.max(...transfers.map(t => t.id), 0) + 1;
+    }
+    setSyncStatus('Synced just now', 'var(--green)');
+    showToast('Data synced from Google Sheets', 'success');
+    renderDashboard();
+    if (currentPage === 'inventory') renderInventory();
+    if (currentPage === 'maintenance') renderMaintenance();
+    if (currentPage === 'transfer') renderTransfer();
+  } catch (err) {
+    setSyncStatus('Sync failed', 'var(--red)');
+    showToast('Could not reach Google Sheets', 'error');
+  }
+}
+
+async function pushToSheets() {
+  if (!SHEETS_URL || SHEETS_KEY === "AFadmin1") {
+    setSyncStatus('Local only', 'var(--text2)');
+    return; // silently skip — app still works locally without Sheets connected
+  }
+  setSyncStatus('Saving...', 'var(--yellow)');
+  try {
+    await Promise.all([
+      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
+        action: 'write', sheet: 'Inventory', key: SHEETS_KEY,
+        records: JSON.stringify(inventory.map(i => ({
+          ID: i.id, No: i.no, Owner: i.owner, Code: i.code, Location: i.location, Item: i.item,
+          Desc1: i.desc1, Desc2: i.desc2, Desc3: i.desc3, Desc4: i.desc4, Desc5: i.desc5,
+          Status: i.status, Remark: i.remark
+        })))
+      })}),
+      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
+        action: 'write', sheet: 'Maintenance', key: SHEETS_KEY,
+        records: JSON.stringify(maintenance.map(m => ({
+          ID: m.id, WO: m.wo, DateCheck: m.dateCheck, Device: m.device, Desc: m.desc, Issue: m.issue,
+          Findings: m.findings, Recommendation: m.recommendation, Status: m.status, DateComplete: m.dateComplete
+        })))
+      })}),
+      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
+        action: 'write', sheet: 'Transfer', key: SHEETS_KEY,
+        records: JSON.stringify(transfers.map(t => ({
+          ID: t.id, No: t.no, Date: t.date, Code: t.code, From: t.from, To: t.to,
+          PIC: t.pic, Reason: t.reason, Auth: t.auth, Remark: t.remark
+        })))
+      })}),
+    ]);
+    setSyncStatus('Saved to Sheets', 'var(--green)');
+  } catch (err) {
+    setSyncStatus('Save failed', 'var(--red)');
+    showToast('Could not save to Google Sheets', 'error');
+  }
+}
+
+// ============================================================
 // INIT
 // ============================================================
-renderDashboard();
+function init() {
+  renderDashboard();
+  if (SHEETS_URL && SHEETS_KEY !== "AFadmin1") {
+    syncFromSheets();
+  }
+}
+
+// Show login unless already signed in this browser session
+if (sessionStorage.getItem('afs_logged_in') === '1') {
+  document.getElementById('login-screen').style.display = 'none';
+  init();
+}
 </script>
 </body>
 </html>
