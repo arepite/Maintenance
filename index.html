@@ -295,6 +295,7 @@
     </div>
     <div class="topbar-right">
       <span id="sync-status" style="font-size:12px;color:var(--text2)">●  Local only</span>
+      <button class="btn btn-secondary" onclick="initialPushToSheets()" id="initial-push-btn">⬆️ Push to Sheets (first time)</button>
       <button class="btn btn-secondary" onclick="syncFromSheets()">🔄 Sync</button>
       <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
       <button class="btn btn-primary" id="add-btn" onclick="openAddModal()">+ Add Record</button>
@@ -1411,7 +1412,7 @@ function showToast(msg, type = 'success') {
 // ============================================================
 // Change these to your own credentials before sharing the file.
 const APP_USERNAME = "hafiz";
-const APP_PASSWORD = "070216";
+const APP_PASSWORD = "changeme123";
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -1428,21 +1429,43 @@ function doLogin() {
 // ============================================================
 // GOOGLE SHEETS BRIDGE
 // ============================================================
-// 1. Paste the Web App URL you got from Apps Script deployment below.
-// 2. Paste the SAME secret key you set inside the Apps Script (SECRET_KEY).
-// Keep this file private once these are filled in — anyone with the file
-// AND the key could read/write your sheet.
+// ===========================================================
+// >>> EDIT THESE TWO LINES BEFORE USING SHEETS SYNC <<<
+// 1. SHEETS_URL  -> your Apps Script Web App URL (already filled in)
+// 2. SHEETS_KEY  -> the SAME secret key you set as SECRET_KEY inside
+//                   your Apps Script. If this still says the
+//                   placeholder text below, Sync will refuse to run.
+// ===========================================================
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwdZ0dkQJnYJsmIXVhT9VqP5oZ9SRCX-9OznIYWeq0C__-aA_hmrrGEV2lI_DQa93_M/exec";
-const SHEETS_KEY = "AFadmin1";
+const SHEETS_KEY = "Afadmin1"; // <-- replace this text only, keep the quotes
 
 function setSyncStatus(text, color) {
   const el = document.getElementById('sync-status');
   if (el) { el.textContent = '●  ' + text; el.style.color = color || 'var(--text2)'; }
 }
 
+function isSheetsConnected() {
+  return SHEETS_URL && SHEETS_KEY && SHEETS_KEY !== "AFadmin1";
+}
+
+// One-time button: pushes whatever is currently loaded in the app
+// (your original 79/49/12 records, or anything since) up to Google
+// Sheets WITHOUT pulling/overwriting first. Use this once, the very
+// first time you connect Sheets, so your existing data seeds the sheet
+// instead of being wiped by an empty sheet on first Sync.
+async function initialPushToSheets() {
+  if (!isSheetsConnected()) {
+    showToast('Set SHEETS_KEY in the code first — see comment near SHEETS_URL', 'error');
+    return;
+  }
+  if (!confirm('This will upload all current Inventory, Maintenance, and Transfer records to your Google Sheet, overwriting whatever is there now. Continue?')) return;
+  await pushToSheets();
+  showToast('Existing data pushed to Google Sheets', 'success');
+}
+
 async function syncFromSheets() {
-  if (!SHEETS_URL || SHEETS_KEY === "AFadmin1") {
-    showToast('Google Sheets not connected yet', 'error');
+  if (!isSheetsConnected()) {
+    showToast('Google Sheets not connected yet — set SHEETS_KEY in the code', 'error');
     return;
   }
   setSyncStatus('Syncing...', 'var(--yellow)');
@@ -1487,7 +1510,7 @@ async function syncFromSheets() {
 }
 
 async function pushToSheets() {
-  if (!SHEETS_URL || SHEETS_KEY === "AFadmin1") {
+  if (!isSheetsConnected()) {
     setSyncStatus('Local only', 'var(--text2)');
     return; // silently skip — app still works locally without Sheets connected
   }
@@ -1529,7 +1552,7 @@ async function pushToSheets() {
 // ============================================================
 function init() {
   renderDashboard();
-  if (SHEETS_URL && SHEETS_KEY !== "AFadmin1") {
+  if (isSheetsConnected()) {
     syncFromSheets();
   }
 }
