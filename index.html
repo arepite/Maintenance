@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFS IT Management System</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #4f8ef7;
+    --accent2: #7c5af7;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --orange: #f97316;
+    --text: #e8eaf0;
+    --text2: #8b91a8;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px; min-height: 100vh; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 20px 18px 16px; border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .org { font-size: 11px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; }
+  .sidebar-logo .sys { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
+  .sidebar-logo .badge { font-size: 10px; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-top: 6px; }
+  .nav { flex: 1; padding: 12px 0; }
+  .nav-section { font-size: 10px; color: var(--text2); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 18px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 18px;
+    cursor: pointer; font-size: 13px; color: var(--text2);
+    transition: all 0.15s; border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--surface2); color: var(--accent); border-left-color: var(--accent); }
+  .nav-item .icon { width: 18px; text-align: center; font-size: 14px; }
+  .sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text2); }
+  .sidebar-footer span { color: var(--accent); font-weight: 600; }
+
+  /* MAIN */
+  .main { margin-left: 220px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title { font-size: 17px; font-weight: 600; }
+  .topbar-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .btn {
+    padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7ae0; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { background: #16a34a; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* DASHBOARD CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-size: 32px; font-weight: 700; margin: 6px 0 2px; }
+  .stat-sub { font-size: 12px; color: var(--text2); }
+  .stat-icon { position: absolute; top: 16px; right: 16px; font-size: 26px; opacity: 0.15; }
+
+  /* CHARTS ROW */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px;
+  }
+  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; }
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 12px; color: var(--text2); width: 100px; flex-shrink: 0; text-align: right; }
+  .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 22px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; color: #fff; transition: width 0.8s ease; }
+  .bar-count { font-size: 12px; color: var(--text2); width: 28px; text-align: right; }
+
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* TABLE */
+  .table-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  }
+  .table-header {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  .table-title { font-size: 14px; font-weight: 600; }
+  .table-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .search-input {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 12px; border-radius: 6px; font-size: 13px; width: 200px;
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); }
+  .filter-select {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 6px; font-size: 13px;
+  }
+  .filter-select:focus { outline: none; border-color: var(--accent); }
+
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    background: var(--surface2); color: var(--text2); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px;
+    text-align: left; font-weight: 600; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+  .data-table .actions { display: flex; gap: 6px; }
+  .table-pagination {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text2);
+  }
+  .pagination-btns { display: flex; gap: 4px; }
+  .page-btn {
+    padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+  }
+  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .page-btn:hover:not(.active) { background: var(--border); }
+
+  /* BADGES */
+  .badge {
+    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    display: inline-block; white-space: nowrap;
+  }
+  .badge-ok { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-repair { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-check { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .badge-completed { background: rgba(79,142,247,0.15); color: var(--accent); }
+  .badge-pending { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .badge-inprogress { background: rgba(124,90,247,0.15); color: var(--accent2); }
+  .badge-blur { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    width: 640px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  }
+  .modal-head {
+    padding: 18px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-head h3 { font-size: 15px; font-weight: 600; }
+  .modal-close { cursor: pointer; color: var(--text2); font-size: 20px; background: none; border: none; color: var(--text2); }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 22px; }
+  .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .form-input, .form-select, .form-textarea {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: var(--font);
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 70px; }
+
+  /* PAGE SECTIONS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px;
+    font-size: 13px; z-index: 9999; transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-left: 4px solid var(--green); }
+  .toast.error { border-left: 4px solid var(--red); }
+
+  /* DETAIL VIEW */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .detail-item { background: var(--surface2); border-radius: 8px; padding: 12px 16px; }
+  .detail-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .detail-value { font-size: 14px; font-weight: 500; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text2); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 14px; }
+
+  canvas { max-width: 100%; }
+
+  @media (max-width: 900px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="org">Organization</div>
+    <div class="sys">AFS IT System</div>
+    <div class="badge">IT & Maintenance</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-section">Records</div>
+    <div class="nav-item" onclick="showPage('inventory')">
+      <span class="icon">🖥️</span> Inventory
+    </div>
+    <div class="nav-item" onclick="showPage('maintenance')">
+      <span class="icon">🔧</span> Maintenance Log
+    </div>
+    <div class="nav-item" onclick="showPage('transfer')">
+      <span class="icon">🔄</span> Item Transfer
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    Logged in as <span>Hafiz</span><br>IT Department
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-sub" id="page-sub">Overview of AFS IT assets and maintenance</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+      <button class="btn btn-primary" id="add-btn" onclick="openAddModal()">+ Add Record</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">🖥️</div>
+          <div class="stat-label">Total Devices</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-sub">Across both branches</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Operational</div>
+          <div class="stat-value" id="stat-ok">0</div>
+          <div class="stat-sub">Status: OK</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-label">Need Attention</div>
+          <div class="stat-value" id="stat-issues">0</div>
+          <div class="stat-sub">Repair / Check needed</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-label">Work Orders</div>
+          <div class="stat-value" id="stat-wo">0</div>
+          <div class="stat-sub">Total maintenance jobs</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Device Status Breakdown</div>
+          <div class="bar-chart" id="status-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Devices by Location</div>
+          <div class="bar-chart" id="location-chart"></div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Device Types</div>
+          <div class="bar-chart" id="type-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Recent Maintenance Jobs</div>
+          <div id="recent-jobs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY PAGE -->
+    <div class="page" id="page-inventory">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">All Inventory <span id="inv-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+          <div class="table-controls">
+            <input class="search-input" placeholder="🔍  Search item, code, person..." id="inv-search" oninput="renderInventory()">
+            <select class="filter-select" id="inv-filter-type" onchange="renderInventory()">
+              <option value="">All Types</option>
+              <option>Dell CPU</option>
+              <option>Dell Monitor</option>
+              <option>Acer Monitor</option>
+              <option>Laptop</option>
+              <option>Printer</option>
+            </select>
+            <select class="filter-select" id="inv-filter-status" onchange="renderInventory()">
+              <option value="">All Status</option>
+              <option>OK</option>
+              <option>Need Repair</option>
+              <option>Need to check</option>
+              <option>Severe blur</option>
+            </select>
+            <select class="filter-select" id="inv-filter-loc" onchange="renderInventory()">
+              <option value="">All Locations</option>
+              <option>Admin Office</option>
+              <option>ICT Room</option>
+              <option>First Aid</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Code</th>
+                <th>Item</th>
+                <th>Owned By</th>
+                <th>Location</th>
+                <th>Processor</th>
+                <th>Storage</th>
+                <th>RAM</th>
+                <th>Status</th>
+                <th>Remark</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inv-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-pagination">
+          <span id="inv-page-info"></span>
+          <div class="pagination-btns" id="inv-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE PAGE -->
+    <div class="page" id="page-maintenance">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Maintenance Log <span id="maint-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+          <div class="table-controls">
+            <input class="search-input" placeholder="🔍  Search WO, device, issue..." id="maint-search" oninput="renderMaintenance()">
+            <select class="filter-select" id="maint-filter-status" onchange="renderMaintenance()">
+              <option value="">All Status</option>
+              <option>Completed</option>
+              <option>Pending</option>
+              <option>In Progress</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Work Order</th>
+                <th>Date Checked</th>
+                <th>Device Code</th>
+                <th>Device</th>
+                <th>Issue</th>
+                <th>Findings</th>
+                <th>Recommendation</th>
+                <th>Status</th>
+                <th>Date Completed</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="maint-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-pagination">
+          <span id="maint-page-info"></span>
+          <div class="pagination-btns" id="maint-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSFER PAGE -->
+    <div class="page" id="page-transfer">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Item Transfer Log <span id="trans-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+          <div class="table-controls">
+            <input class="search-input" placeholder="🔍  Search code, location..." id="trans-search" oninput="renderTransfer()">
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Transfer Date</th>
+                <th>Item Code</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Person in Charge</th>
+                <th>Reason / Purpose</th>
+                <th>Authorized By</th>
+                <th>Remark</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="trans-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-pagination">
+          <span id="trans-page-info"></span>
+          <div class="pagination-btns" id="trans-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODALS -->
+<!-- Inventory Modal -->
+<div class="modal-overlay" id="modal-inventory">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="inv-modal-title">Add Inventory Item</h3>
+      <button class="modal-close" onclick="closeModal('modal-inventory')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="inv-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Item Code *</label>
+          <input class="form-input" id="inv-code" placeholder="e.g. AFS/SA/PC/042">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Item Type *</label>
+          <select class="form-select" id="inv-item">
+            <option>Dell CPU</option>
+            <option>Dell Monitor</option>
+            <option>Acer Monitor</option>
+            <option>Laptop</option>
+            <option>Printer</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Owned By / Assigned To</label>
+          <input class="form-input" id="inv-owner" placeholder="e.g. ICT-32 or Staff Name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location *</label>
+          <select class="form-select" id="inv-location">
+            <option>Admin Office</option>
+            <option>ICT Room</option>
+            <option>First Aid</option>
+            <option>Store</option>
+            <option>Branch 2</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Processor</label>
+          <input class="form-input" id="inv-desc1" placeholder="e.g. Intel Core i5-14400">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Model</label>
+          <input class="form-input" id="inv-desc2" placeholder="e.g. Optiplex 380">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Storage</label>
+          <input class="form-input" id="inv-desc3" placeholder="e.g. Patriot SSD 256GB">
+        </div>
+        <div class="form-group">
+          <label class="form-label">RAM</label>
+          <input class="form-input" id="inv-desc4" placeholder="e.g. 8GB DDR4">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Status *</label>
+          <select class="form-select" id="inv-status">
+            <option>OK</option>
+            <option>Need Repair</option>
+            <option>Need to check</option>
+            <option>Severe blur</option>
+            <option>Decommissioned</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remark</label>
+          <input class="form-input" id="inv-remark" placeholder="Optional notes">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-inventory')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInventory()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Maintenance Modal -->
+<div class="modal-overlay" id="modal-maintenance">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="maint-modal-title">Add Work Order</h3>
+      <button class="modal-close" onclick="closeModal('modal-maintenance')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="maint-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Work Order No *</label>
+          <input class="form-input" id="maint-wo" placeholder="e.g. CM0049">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date Checked *</label>
+          <input class="form-input" type="date" id="maint-date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Device Code *</label>
+          <input class="form-input" id="maint-device" placeholder="e.g. AFS/SA/PC/001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Device Description</label>
+          <input class="form-input" id="maint-desc" placeholder="e.g. Dell CPU">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Issue / Problem *</label>
+          <textarea class="form-textarea" id="maint-issue" placeholder="Describe the problem..."></textarea>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Findings</label>
+          <textarea class="form-textarea" id="maint-findings" placeholder="What was found during inspection..."></textarea>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Recommendation / Action Taken</label>
+          <textarea class="form-textarea" id="maint-recommendation" placeholder="Steps taken or recommended..."></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Status *</label>
+          <select class="form-select" id="maint-status">
+            <option>Completed</option>
+            <option>In Progress</option>
+            <option>Pending</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date Completed</label>
+          <input class="form-input" type="date" id="maint-complete">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-maintenance')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMaintenance()">Save Work Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transfer Modal -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="trans-modal-title">Add Transfer Record</h3>
+      <button class="modal-close" onclick="closeModal('modal-transfer')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="trans-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Transfer Date *</label>
+          <input class="form-input" type="date" id="trans-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Item Code *</label>
+          <input class="form-input" id="trans-code" placeholder="e.g. AFS/SA/PC/001">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Transfer From *</label>
+          <input class="form-input" id="trans-from" placeholder="e.g. ICT Room">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Transfer To *</label>
+          <input class="form-input" id="trans-to" placeholder="e.g. Admin Office">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Person in Charge</label>
+          <input class="form-input" id="trans-pic" placeholder="e.g. Hafiz">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Authorized By</label>
+          <input class="form-input" id="trans-auth" placeholder="e.g. Hafiz">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Reason / Purpose</label>
+          <textarea class="form-textarea" id="trans-reason" placeholder="Why is this item being transferred..."></textarea>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Remark</label>
+          <input class="form-input" id="trans-remark" placeholder="Optional notes">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-transfer')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTransfer()">Save Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="width:380px">
+    <div class="modal-head">
+      <h3>Confirm Delete</h3>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:14px">Are you sure you want to delete this record? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA - Pre-loaded from your Excel file
+// ============================================================
+function excelDateToString(serial) {
+  if (!serial || isNaN(serial)) return serial || '';
+  const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+  return date.toISOString().split('T')[0];
+}
+
+let inventory = [
+  {id:1, no:1, owner:'Printer PC 1', code:'AFS/SA/PC/001', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Patriot SSD 256GB + WD HDD 300GB', desc4:'6GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:2, no:2, owner:'Printer PC 2', code:'AFS/SA/PC/002', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Patriot SSD 256GB + WD HDD 500GB', desc4:'6GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:3, no:3, owner:'HZ', code:'AFS/SA/PC/003', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Kingston 500GB SATA', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:4, no:4, owner:'AN', code:'AFS/SA/PC/004', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'WD SATA 300GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:5, no:5, owner:'SI', code:'AFS/SA/PC/005', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Kingston 500GB SATA', desc4:'8GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:6, no:6, owner:'SB', code:'AFS/SA/PC/006', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 980', desc3:'Sandisk SSD 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:7, no:7, owner:'NA', code:'AFS/SA/PC/007', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'WD HDD 500GB', desc4:'6GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:8, no:8, owner:'DE', code:'AFS/SA/PC/008', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Patriot SSD 256GB + Kingston HDD 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:9, no:9, owner:'IH', code:'AFS/SA/PC/009', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core i5-14400', desc2:'Dell Tower ECT1250', desc3:'NVMe EG6 KIOXIA 512GB', desc4:'8GB DDR5', desc5:'Onboard', status:'OK', remark:''},
+  {id:10, no:10, owner:'HAFIZ', code:'AFS/SA/PC/010', location:'First Aid', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Patriot SSD 256GB + WD HDD 300GB', desc4:'6GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:11, no:11, owner:'ICT-1', code:'AFS/SA/PC/011', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:12, no:12, owner:'ICT-2', code:'AFS/SA/PC/012', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'WD SATA 300GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:13, no:13, owner:'ICT-3', code:'AFS/SA/PC/013', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:14, no:14, owner:'ICT-4', code:'AFS/SA/PC/014', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'', desc3:'', desc4:'', desc5:'', status:'Need Repair', remark:'Cannot Start'},
+  {id:15, no:15, owner:'ICT-5', code:'AFS/SA/PC/015', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'', desc3:'', desc4:'', desc5:'', status:'Need Repair', remark:'Cannot Start'},
+  {id:16, no:16, owner:'ICT-6', code:'AFS/SA/PC/016', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:17, no:17, owner:'ICT-7', code:'AFS/SA/PC/017', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'', desc3:'', desc4:'', desc5:'', status:'Need Repair', remark:'Cannot Start'},
+  {id:18, no:18, owner:'ICT-8', code:'AFS/SA/PC/018', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'', desc3:'', desc4:'', desc5:'', status:'Need Repair', remark:'Cannot Start'},
+  {id:19, no:19, owner:'ICT-9', code:'AFS/SA/PC/019', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'WD SATA 300GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:20, no:20, owner:'ICT-10', code:'AFS/SA/PC/020', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:21, no:21, owner:'ICT-11', code:'AFS/SA/PC/021', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:22, no:22, owner:'ICT-12', code:'AFS/SA/PC/022', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:'Suspect Motherboard problem'},
+  {id:23, no:23, owner:'ICT-14', code:'AFS/SA/PC/023', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:24, no:24, owner:'ICT-15', code:'AFS/SA/PC/024', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:25, no:25, owner:'ICT-18', code:'AFS/SA/PC/025', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:'Suspect broken LAN socket'},
+  {id:26, no:26, owner:'ICT-19', code:'AFS/SA/PC/026', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:'Too slow. Need to format.'},
+  {id:27, no:27, owner:'ICT-21', code:'AFS/SA/PC/027', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:28, no:28, owner:'ICT-22', code:'AFS/SA/PC/028', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:29, no:29, owner:'ICT-23', code:'AFS/SA/PC/029', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:30, no:30, owner:'ICT-24', code:'AFS/SA/PC/030', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:'Windows 7 Pro. Need to upgrade to Windows 10.'},
+  {id:31, no:31, owner:'ICT-25', code:'AFS/SA/PC/031', location:'ICT Room', item:'Dell CPU', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'Need to check', remark:'Suspect hard disk problem'},
+  {id:32, no:32, owner:'ICT-26', code:'AFS/SA/PC/032', location:'ICT Room', item:'Dell CPU', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'Need to check', remark:'Suspect hard disk problem'},
+  {id:33, no:33, owner:'ICT-27', code:'AFS/SA/PC/033', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:34, no:34, owner:'ICT-28', code:'AFS/SA/PC/034', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:35, no:35, owner:'ICT-29', code:'AFS/SA/PC/035', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:36, no:36, owner:'ICT-30', code:'AFS/SA/PC/036', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  {id:37, no:37, owner:'None', code:'AFS/SA/PC/037', location:'ICT Room', item:'Dell CPU', desc1:'', desc2:'Vostro 230', desc3:'', desc4:'', desc5:'', status:'Need to check', remark:'Suspect hard disk problem'},
+  {id:38, no:38, owner:'None', code:'AFS/SA/PC/038', location:'ICT Room', item:'Dell CPU', desc1:'', desc2:'Vostro 230', desc3:'', desc4:'', desc5:'', status:'Need to check', remark:''},
+  {id:39, no:39, owner:'None', code:'AFS/SA/PC/039', location:'ICT Room', item:'Dell CPU', desc1:'', desc2:'Vostro 230', desc3:'', desc4:'', desc5:'', status:'Need to check', remark:''},
+  {id:40, no:40, owner:'None', code:'AFS/SA/PC/040', location:'ICT Room', item:'Dell CPU', desc1:'', desc2:'Optiplex 380', desc3:'', desc4:'', desc5:'', status:'Need to check', remark:''},
+  {id:41, no:41, owner:'ICT-31', code:'AFS/SA/PC/041', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'WD SATA 300GB', desc4:'8GB DDR3', desc5:'Onboard', status:'OK', remark:'Slow. Need to format'},
+  {id:42, no:42, owner:'ICT-13', code:'AFS/SA/PC/042', location:'ICT Room', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Vostro 230', desc3:'Seagate SATA 500GB', desc4:'4GB DDR3', desc5:'Onboard', status:'OK', remark:''},
+  // Monitors
+  {id:43, no:43, owner:'Printer PC 1', code:'AFS/SA/DM/001', location:'Admin Office', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:44, no:44, owner:'Printer PC 2', code:'AFS/SA/DM/002', location:'Admin Office', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:45, no:45, owner:'HZ', code:'AFS/SA/DM/038', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:46, no:46, owner:'AN', code:'AFS/SA/DM/039', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:47, no:47, owner:'SI', code:'AFS/SA/DM/040', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:48, no:48, owner:'SB', code:'AFS/SA/DM/041', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:49, no:49, owner:'NA', code:'AFS/SA/DM/042', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:50, no:50, owner:'DE', code:'AFS/SA/DM/043', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:51, no:51, owner:'IH', code:'AFS/SA/DM/044', location:'Admin Office', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:52, no:52, owner:'HAFIZ', code:'AFS/SA/DM/010', location:'First Aid', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:53, no:53, owner:'ICT-1', code:'AFS/SA/DM/011', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:54, no:54, owner:'ICT-2', code:'AFS/SA/DM/012', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:55, no:55, owner:'ICT-3', code:'AFS/SA/DM/013', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:'Blurry. Manageable.'},
+  {id:56, no:56, owner:'ICT-4', code:'AFS/SA/DM/014', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'Severe blur', remark:'Need Replacement.'},
+  {id:57, no:57, owner:'ICT-5', code:'AFS/SA/DM/017', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:58, no:58, owner:'ICT-6', code:'AFS/SA/DM/016', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:59, no:59, owner:'ICT-7', code:'AFS/SA/DM/015', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'Severe blur', remark:'Need Replacement.'},
+  {id:60, no:60, owner:'ICT-8', code:'AFS/SA/DM/018', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:61, no:61, owner:'ICT-9', code:'AFS/SA/DM/019', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:62, no:62, owner:'ICT-10', code:'AFS/SA/DM/020', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:'Blurry. Manageable.'},
+  {id:63, no:63, owner:'ICT-11', code:'AFS/SA/DM/021', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:64, no:64, owner:'ICT-12', code:'AFS/SA/DM/022', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:65, no:65, owner:'ICT-14', code:'AFS/SA/DM/023', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:66, no:66, owner:'ICT-15', code:'AFS/SA/PC/024', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:67, no:67, owner:'ICT-18', code:'AFS/SA/PC/025', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:68, no:68, owner:'ICT-19', code:'AFS/SA/PC/026', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:69, no:69, owner:'ICT-21', code:'AFS/SA/PC/027', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:70, no:70, owner:'ICT-22', code:'AFS/SA/PC/028', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:71, no:71, owner:'ICT-23', code:'AFS/SA/PC/029', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:72, no:72, owner:'ICT-24', code:'AFS/SA/PC/030', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:'Blurry. Manageable.'},
+  {id:73, no:73, owner:'ICT-25', code:'AFS/SA/PC/031', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:74, no:74, owner:'ICT-26', code:'AFS/SA/PC/032', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'Severe blur', remark:'Need replacement.'},
+  {id:75, no:75, owner:'ICT-27', code:'AFS/SA/PC/033', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:76, no:76, owner:'ICT-28', code:'AFS/SA/PC/034', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:77, no:77, owner:'ICT-29', code:'AFS/SA/PC/035', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:78, no:78, owner:'ICT-30', code:'AFS/SA/PC/036', location:'ICT Room', item:'Acer Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+  {id:79, no:79, owner:'ICT-13', code:'AFS/SA/PC/004', location:'ICT Room', item:'Dell Monitor', desc1:'', desc2:'', desc3:'', desc4:'', desc5:'', status:'OK', remark:''},
+];
+
+let maintenance = [
+  {id:1, wo:'CM0001', dateCheck:'2026-02-04', device:'AFS/SA/PC/010', desc:'Dell CPU', issue:'Slow', findings:'1. Motherboard battery\'s low 2. Slow processed when open any software', recommendation:'1. Replace battery (CR2032) 2. Change to SSD', status:'Completed', dateComplete:'2026-02-21'},
+  {id:2, wo:'CM0002', dateCheck:'2026-02-04', device:'AFS/SA/PC/001', desc:'Dell CPU', issue:'Slow', findings:'1. Multiple installed antivirus. 2. Slow when open any software.', recommendation:'1. Uninstalled unnecessary antivirus. 2. Change to SSD', status:'Completed', dateComplete:'2026-02-17'},
+  {id:3, wo:'CM0003', dateCheck:'2026-02-04', device:'AFS/SA/PC/002', desc:'Dell CPU', issue:'Cannot start', findings:'1. Suspect motherboard issue.', recommendation:'1. Replace motherboard.', status:'Completed', dateComplete:'2026-02-04'},
+  {id:4, wo:'CM0004', dateCheck:'2026-02-04', device:'AFS/SA/PC/002', desc:'Dell CPU', issue:'Slow', findings:'1. Motherboard battery\'s low 2. Slow processed when open any software', recommendation:'1. Replace battery (CR2032) 2. Change to SSD', status:'Completed', dateComplete:'2026-02-16'},
+  {id:5, wo:'CM0005', dateCheck:'2026-02-04', device:'AFS/SA/PC/037', desc:'Dell CPU', issue:'Cannot start', findings:'1. Fan become unstable when start up.', recommendation:'1. Clean RAM. 2. Replace motherboard\'s battery (CR2032)', status:'Completed', dateComplete:'2026-02-04'},
+  {id:6, wo:'CM0006', dateCheck:'2026-02-05', device:'AFS/SA/PC/003~009', desc:'Dell CPU', issue:'Not connected to share file (\\\\af-acc1)', findings:'1. Disconnect from server', recommendation:'1. Reconnect the computer to the server', status:'Completed', dateComplete:'2026-02-05'},
+  {id:7, wo:'CM0007', dateCheck:'2026-02-14', device:'AFS/SA/PC/001~008', desc:'Dell CPU', issue:'Not connected to share printer', findings:'1. Need to establish networking for Epson L 11050 printer.', recommendation:'1. Create networking for the Epson L 11050 printer.', status:'Completed', dateComplete:'2026-02-14'},
+  {id:8, wo:'CM0008', dateCheck:'2026-02-14', device:'AFS/SA/PC/003', desc:'Dell CPU', issue:'Cannot print via network', findings:'Might be queue on host printer', recommendation:'1. Wait and execute test print.', status:'Completed', dateComplete:'2026-02-14'},
+  {id:9, wo:'CM0009', dateCheck:'2026-02-17', device:'AFS/SA/PC/008', desc:'Dell CPU', issue:'Slow & always hang when open certain software', findings:'Slow when open Microsoft Excel.', recommendation:'1. Upgrade to SSD 2. Scan for virus.', status:'Completed', dateComplete:'2026-02-24'},
+  {id:10, wo:'CM0010', dateCheck:'2026-02-18', device:'AFS/SA/PC/012', desc:'Dell CPU', issue:'Cannot boot', findings:'Windows file corrupted', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-02-19'},
+  {id:11, wo:'CM0011', dateCheck:'2026-02-19', device:'AFS/SA/PC/028', desc:'Dell CPU', issue:'Cannot boot', findings:'Windows file corrupted', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-02-21'},
+  {id:12, wo:'CM0012', dateCheck:'2026-02-25', device:'AFS/SA/PC/001', desc:'Dell CPU', issue:'Virus', findings:'Find Shortcut Virus', recommendation:'1. Scan with Malwarebytes and quarantine all the malware and virus.', status:'Completed', dateComplete:'2026-02-25'},
+  {id:13, wo:'CM0013', dateCheck:'2026-02-26', device:'AFS/SA/PC/001', desc:'Dell CPU', issue:'Virus', findings:'Main file of the virus still in the system.', recommendation:'1. Find with Task Manager and found it look like MPC-HC. Delete the whole file.', status:'Completed', dateComplete:'2026-02-26'},
+  {id:14, wo:'CM0014', dateCheck:'2026-02-26', device:'AFS/SA/PC/014', desc:'Dell CPU', issue:'Cannot boot', findings:'Hard Disk corrupted', recommendation:'1. Replace hard disk 2. Format 3. Install Deep freeze 4. Create Guest Account', status:'Completed', dateComplete:'2026-03-30'},
+  {id:15, wo:'CM0015', dateCheck:'2026-02-26', device:'AFS/SA/DM/014', desc:'Dell Monitor', issue:'Monitor severe blurry', findings:'Cannot repair', recommendation:'Replacement', status:'Completed', dateComplete:'2026-03-30'},
+  {id:16, wo:'CM0016', dateCheck:'2026-02-26', device:'AFS/SA/PC/015', desc:'Dell CPU', issue:'Cannot boot', findings:'Suspect Windows file corrupted', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-03-31'},
+  {id:17, wo:'CM0017', dateCheck:'2026-02-26', device:'AFS/SA/DM/015', desc:'Dell Monitor', issue:'Monitor severe blurry', findings:'Cannot repair', recommendation:'Replacement', status:'Completed', dateComplete:'2026-03-31'},
+  {id:18, wo:'CM0018', dateCheck:'2026-02-26', device:'AFS/SA/PC/017', desc:'Dell CPU', issue:'Cannot boot', findings:'Suspect Windows file corrupted', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-04-01'},
+  {id:19, wo:'CM0019', dateCheck:'2026-02-26', device:'AFS/SA/PC/018', desc:'Dell CPU', issue:'Cannot boot', findings:'Suspect Windows file corrupted', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-03-14'},
+  {id:20, wo:'CM0020', dateCheck:'2026-02-26', device:'AFS/SA/PC/022', desc:'Dell CPU', issue:'Cannot start', findings:'Suspect Motherboard problem', recommendation:'', status:'Pending', dateComplete:''},
+  {id:21, wo:'CM0021', dateCheck:'2026-02-26', device:'ICT-18 LAN', desc:'LAN socket', issue:'Suspect broken LAN socket', findings:'Suspect the socket or the connection issue', recommendation:'Use connection from switch', status:'Completed', dateComplete:'2026-03-27'},
+  {id:22, wo:'CM0022', dateCheck:'2026-02-26', device:'AFS/SA/PC/026', desc:'Dell CPU', issue:'Too slow.', findings:'Still slow after maintenance.', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-03-09'},
+  {id:23, wo:'CM0023', dateCheck:'2026-02-26', device:'AFS/SA/PC/030', desc:'Dell CPU', issue:'Still using Windows 7', findings:'Unable to update or install other software', recommendation:'Format', status:'Pending', dateComplete:''},
+  {id:24, wo:'CM0024', dateCheck:'2026-02-26', device:'AFS/SA/PC/031', desc:'Dell CPU', issue:'Cannot boot', findings:'Suspect hard disk or Windows file corrupted.', recommendation:'1. Replace hard disk 2. Format 3. Install Deep freeze 4. Create Guest Account', status:'Completed', dateComplete:'2026-03-26'},
+  {id:25, wo:'CM0025', dateCheck:'2026-02-26', device:'AFS/SA/PC/032', desc:'Dell CPU', issue:'Cannot boot', findings:'Suspect hard disk or Windows file corrupted.', recommendation:'', status:'Pending', dateComplete:''},
+  {id:26, wo:'CM0026', dateCheck:'2026-02-26', device:'AFS/SA/DM/032', desc:'Dell Monitor', issue:'Monitor severe blurry', findings:'Cannot repair', recommendation:'Replacement', status:'Completed', dateComplete:'2026-03-26'},
+  {id:27, wo:'CM0027', dateCheck:'2026-02-26', device:'AFS/SA/DM/036', desc:'Dell CPU', issue:'Cannot boot', findings:'Suspect hard disk or Windows file corrupted.', recommendation:'1. Replace hard disk 2. Format 3. Install Deep freeze 4. Create Guest Account', status:'Completed', dateComplete:'2026-03-28'},
+  {id:28, wo:'CM0028', dateCheck:'2026-03-21', device:'AFS/SA/PC/041', desc:'Dell CPU', issue:'Too slow.', findings:'Still slow after maintenance.', recommendation:'1. Format 2. Install Deep Freeze', status:'Completed', dateComplete:'2026-03-24'},
+  {id:29, wo:'CM0029', dateCheck:'2026-03-21', device:'AFS/SA/PC/019', desc:'Dell CPU', issue:'Too slow.', findings:'Still slow after maintenance.', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-03-24'},
+  {id:30, wo:'CM0030', dateCheck:'2026-03-24', device:'AFS/SA/PC/019', desc:'Dell CPU', issue:'Cannot boot', findings:'Battery issue.', recommendation:'Change battery', status:'Completed', dateComplete:'2026-03-24'},
+  {id:31, wo:'CM0031', dateCheck:'2026-03-25', device:'ICT-13', desc:'1 Set PC', issue:'No PC Set', findings:'Need new PC set. Find from store.', recommendation:'Transfer PC/038, DM/004, KB/038, MS/005. Format, Add Guest Acct, Install Deepfreeze', status:'Completed', dateComplete:'2026-03-26'},
+  {id:32, wo:'CM0032', dateCheck:'2026-04-03', device:'AFS/B5/PC/001', desc:'Dell CPU', issue:'Cannot boot', findings:'Format', recommendation:'1. Change Motherboard Battery 2. Format 3. Install Deep Freeze 4. Create Guest Account 5. Install ICT software', status:'Completed', dateComplete:'2026-04-03'},
+  {id:33, wo:'CM0033', dateCheck:'2026-04-05', device:'AFS/SA/PC/036', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-05'},
+  {id:34, wo:'CM0034', dateCheck:'2026-04-05', device:'AFS/SA/PC/035', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-08'},
+  {id:35, wo:'CM0035', dateCheck:'2026-04-05', device:'AFS/SA/PC/034', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-05'},
+  {id:36, wo:'CM0036', dateCheck:'2026-04-05', device:'AFS/SA/PC/033', desc:'Dell CPU', issue:'Very slow.', findings:'Suspect have virus', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-04-08'},
+  {id:37, wo:'CM0037', dateCheck:'2026-04-08', device:'AFS/SA/PC/033', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-08'},
+  {id:38, wo:'CM0038', dateCheck:'2026-04-08', device:'AFS/SA/PC/035', desc:'Dell CPU', issue:'Very slow.', findings:'Suspect have virus', recommendation:'1. Format 2. Install Deep Freeze 3. Create Guest Account', status:'Completed', dateComplete:'2026-04-08'},
+  {id:39, wo:'CM0039', dateCheck:'2026-04-10', device:'AFS/SA/PC/031', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-10'},
+  {id:40, wo:'CM0040', dateCheck:'2026-04-10', device:'AFS/SA/PC/026', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-10'},
+  {id:41, wo:'CM0041', dateCheck:'2026-04-10', device:'AFS/SA/PC/038', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:42, wo:'CM0042', dateCheck:'2026-04-12', device:'AFS/SA/PC/022', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:43, wo:'CM0043', dateCheck:'2026-04-12', device:'AFS/SA/PC/021', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:44, wo:'CM0044', dateCheck:'2026-04-12', device:'AFS/SA/PC/017', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:45, wo:'CM0045', dateCheck:'2026-04-12', device:'AFS/SA/PC/015', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:46, wo:'CM0046', dateCheck:'2026-04-12', device:'AFS/SA/PC/014', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:47, wo:'CM0047', dateCheck:'2026-04-12', device:'AFS/SA/PC/013', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:48, wo:'CM0048', dateCheck:'2026-04-12', device:'AFS/SA/PC/012', desc:'Dell CPU', issue:'Need software for ICT syllabus', findings:'Install all the software needed', recommendation:'Install all the Software for ICT syllabus', status:'Completed', dateComplete:'2026-04-17'},
+  {id:49, wo:'CM0049', dateCheck:'2026-04-21', device:'AFS/SA/PC/012', desc:'Dell CPU', issue:'Microsoft Office corrupted', findings:'Need to reinstall Microsoft Office', recommendation:'Upgrade to Microsoft Office 2019', status:'Completed', dateComplete:'2026-04-28'},
+];
+
+let transfers = [
+  {id:1, no:1, date:'2026-09-04', code:'AFS/SA/MS/006', from:'ICT', to:'First Aid', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:2, no:2, date:'2026-09-04', code:'AFS/SA/MS/007', from:'ICT', to:'First Aid', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:3, no:3, date:'2026-09-04', code:'AFS/SA/MS/037', from:'ICT', to:'First Aid', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:4, no:4, date:'2026-09-04', code:'AFS/SA/MS/038', from:'ICT', to:'First Aid', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:5, no:5, date:'2026-09-04', code:'AFS/SA/MS/039', from:'ICT', to:'First Aid', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:6, no:6, date:'2026-09-04', code:'AFS/SA/MS/040', from:'ICT', to:'First Aid', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:7, no:7, date:'2026-03-14', code:'AFS/SA/DM/015', from:'ICT-7', to:'ICT-5', pic:'Hafiz', reason:'Can use for ICT-7', auth:'Hafiz', remark:''},
+  {id:8, no:8, date:'2026-03-14', code:'AFS/SA/DM/017', from:'ICT-5', to:'ICT-7', pic:'Hafiz', reason:'Broken', auth:'Hafiz', remark:''},
+  {id:9, no:9, date:'2026-03-24', code:'AFS/SA/MS/031', from:'ICT-25', to:'First Aid', pic:'Hafiz', reason:'Use for PC/010', auth:'Hafiz', remark:''},
+  {id:10, no:10, date:'2026-03-24', code:'AFS/SA/MS/036', from:'ICT-30', to:'ICT-31', pic:'Hafiz', reason:'Use for PC/041', auth:'Hafiz', remark:''},
+  {id:11, no:11, date:'2026-03-26', code:'AFS/SA/PC/038', from:'First Aid', to:'ICT-13', pic:'Hafiz', reason:'Build PC for ICT-13', auth:'Hafiz', remark:''},
+  {id:12, no:12, date:'2026-03-26', code:'AFS/SA/DM/004', from:'Store', to:'ICT-13', pic:'Hafiz', reason:'Build PC for ICT-13', auth:'Hafiz', remark:''},
+];
+
+// State
+let currentPage = 'dashboard';
+let invPage = 1, maintPage = 1, transPage = 1;
+const PER_PAGE = 15;
+let deleteTarget = null;
+let nextInvId = 80, nextMaintId = 50, nextTransId = 13;
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(page === 'maintenance' ? 'maintenance' : page === 'transfer' ? 'transfer' : page)) {
+      n.classList.add('active');
+    }
+  });
+  const titles = {
+    dashboard: ['Dashboard', 'Overview of AFS IT assets and maintenance'],
+    inventory: ['Inventory', 'All IT assets across both branches'],
+    maintenance: ['Maintenance Log', 'Work orders and maintenance history'],
+    transfer: ['Item Transfer', 'Track item movements between locations'],
+  };
+  document.getElementById('page-title').textContent = titles[page][0];
+  document.getElementById('page-sub').textContent = titles[page][1];
+  document.getElementById('add-btn').style.display = page === 'dashboard' ? 'none' : 'block';
+  if (page === 'dashboard') renderDashboard();
+  else if (page === 'inventory') { invPage = 1; renderInventory(); }
+  else if (page === 'maintenance') { maintPage = 1; renderMaintenance(); }
+  else if (page === 'transfer') { transPage = 1; renderTransfer(); }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const total = inventory.length;
+  const ok = inventory.filter(i => i.status === 'OK').length;
+  const issues = inventory.filter(i => i.status !== 'OK').length;
+  const wo = maintenance.length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-issues').textContent = issues;
+  document.getElementById('stat-wo').textContent = wo;
+
+  // Status chart
+  const statusCounts = {};
+  inventory.forEach(i => { statusCounts[i.status] = (statusCounts[i.status] || 0) + 1; });
+  const maxS = Math.max(...Object.values(statusCounts));
+  const statusColors = { 'OK': '#22c55e', 'Need Repair': '#ef4444', 'Need to check': '#f59e0b', 'Severe blur': '#f97316' };
+  document.getElementById('status-chart').innerHTML = Object.entries(statusCounts).map(([k, v]) =>
+    `<div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100)}%;background:${statusColors[k]||'#4f8ef7'}">${v}</div></div>
+      <div class="bar-count">${v}</div>
+    </div>`
+  ).join('');
+
+  // Location chart
+  const locCounts = {};
+  inventory.forEach(i => { locCounts[i.location] = (locCounts[i.location] || 0) + 1; });
+  const maxL = Math.max(...Object.values(locCounts));
+  const locColors = ['#4f8ef7','#7c5af7','#22c55e','#f59e0b'];
+  document.getElementById('location-chart').innerHTML = Object.entries(locCounts).map(([k, v], i) =>
+    `<div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxL*100)}%;background:${locColors[i%locColors.length]}">${v}</div></div>
+      <div class="bar-count">${v}</div>
+    </div>`
+  ).join('');
+
+  // Type chart
+  const typeCounts = {};
+  inventory.forEach(i => { typeCounts[i.item] = (typeCounts[i.item] || 0) + 1; });
+  const maxT = Math.max(...Object.values(typeCounts));
+  document.getElementById('type-chart').innerHTML = Object.entries(typeCounts).map(([k, v], i) =>
+    `<div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100)}%;background:#4f8ef7">${v}</div></div>
+      <div class="bar-count">${v}</div>
+    </div>`
+  ).join('');
+
+  // Recent jobs
+  const recent = [...maintenance].slice(-6).reverse();
+  document.getElementById('recent-jobs').innerHTML = recent.map(m =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:600">${m.wo} — ${m.device}</div>
+        <div style="font-size:12px;color:var(--text2)">${m.issue}</div>
+      </div>
+      ${statusBadge(m.status)}
+    </div>`
+  ).join('');
+}
+
+// ============================================================
+// STATUS BADGE
+// ============================================================
+function statusBadge(status) {
+  const map = {
+    'OK': 'badge-ok', 'Need Repair': 'badge-repair', 'Need to check': 'badge-check',
+    'Completed': 'badge-completed', 'Pending': 'badge-pending', 'In Progress': 'badge-inprogress',
+    'Severe blur': 'badge-blur', 'Decommissioned': 'badge-check'
+  };
+  return `<span class="badge ${map[status]||'badge-check'}">${status}</span>`;
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+function getFilteredInventory() {
+  const search = document.getElementById('inv-search').value.toLowerCase();
+  const fType = document.getElementById('inv-filter-type').value;
+  const fStatus = document.getElementById('inv-filter-status').value;
+  const fLoc = document.getElementById('inv-filter-loc').value;
+  return inventory.filter(i =>
+    (!search || i.code.toLowerCase().includes(search) || i.owner.toLowerCase().includes(search) || i.item.toLowerCase().includes(search) || (i.remark||'').toLowerCase().includes(search)) &&
+    (!fType || i.item === fType) &&
+    (!fStatus || i.status === fStatus) &&
+    (!fLoc || i.location === fLoc)
+  );
+}
+
+function renderInventory() {
+  const data = getFilteredInventory();
+  const total = data.length;
+  const start = (invPage - 1) * PER_PAGE;
+  const page = data.slice(start, start + PER_PAGE);
+  document.getElementById('inv-count').textContent = `(${total} items)`;
+  const tbody = document.getElementById('inv-tbody');
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No items found</p></div></td></tr>` :
+    page.map((i, idx) => `
+      <tr>
+        <td>${start + idx + 1}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--accent)">${i.code}</td>
+        <td>${i.item}</td>
+        <td>${i.owner}</td>
+        <td>${i.location}</td>
+        <td style="font-size:12px">${i.desc1||'—'}</td>
+        <td style="font-size:12px">${i.desc3||'—'}</td>
+        <td style="font-size:12px">${i.desc4||'—'}</td>
+        <td>${statusBadge(i.status)}</td>
+        <td style="font-size:12px;color:var(--text2);max-width:160px">${i.remark||'—'}</td>
+        <td><div class="actions">
+          <button class="btn btn-secondary btn-sm" onclick="editInventory(${i.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('inventory',${i.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('');
+  renderPagination('inv', total, invPage, (p) => { invPage = p; renderInventory(); });
+  document.getElementById('inv-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+}
+
+function openAddModal() {
+  if (currentPage === 'inventory') {
+    document.getElementById('inv-modal-title').textContent = 'Add Inventory Item';
+    document.getElementById('inv-edit-id').value = '';
+    ['inv-code','inv-owner','inv-desc1','inv-desc2','inv-desc3','inv-desc4','inv-remark'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('inv-item').value = 'Dell CPU';
+    document.getElementById('inv-location').value = 'ICT Room';
+    document.getElementById('inv-status').value = 'OK';
+    openModal('modal-inventory');
+  } else if (currentPage === 'maintenance') {
+    document.getElementById('maint-modal-title').textContent = 'Add Work Order';
+    document.getElementById('maint-edit-id').value = '';
+    const nextWO = 'CM' + String(maintenance.length + 1).padStart(4, '0');
+    document.getElementById('maint-wo').value = nextWO;
+    document.getElementById('maint-date').value = new Date().toISOString().split('T')[0];
+    ['maint-device','maint-desc','maint-issue','maint-findings','maint-recommendation','maint-complete'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('maint-status').value = 'Pending';
+    openModal('modal-maintenance');
+  } else if (currentPage === 'transfer') {
+    document.getElementById('trans-modal-title').textContent = 'Add Transfer Record';
+    document.getElementById('trans-edit-id').value = '';
+    document.getElementById('trans-date').value = new Date().toISOString().split('T')[0];
+    ['trans-code','trans-from','trans-to','trans-reason','trans-remark'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('trans-pic').value = 'Hafiz';
+    document.getElementById('trans-auth').value = 'Hafiz';
+    openModal('modal-transfer');
+  }
+}
+
+function editInventory(id) {
+  const i = inventory.find(x => x.id === id);
+  if (!i) return;
+  document.getElementById('inv-modal-title').textContent = 'Edit Inventory Item';
+  document.getElementById('inv-edit-id').value = id;
+  document.getElementById('inv-code').value = i.code;
+  document.getElementById('inv-item').value = i.item;
+  document.getElementById('inv-owner').value = i.owner;
+  document.getElementById('inv-location').value = i.location;
+  document.getElementById('inv-desc1').value = i.desc1;
+  document.getElementById('inv-desc2').value = i.desc2;
+  document.getElementById('inv-desc3').value = i.desc3;
+  document.getElementById('inv-desc4').value = i.desc4;
+  document.getElementById('inv-status').value = i.status;
+  document.getElementById('inv-remark').value = i.remark;
+  openModal('modal-inventory');
+}
+
+function saveInventory() {
+  const editId = document.getElementById('inv-edit-id').value;
+  const code = document.getElementById('inv-code').value.trim();
+  if (!code) { showToast('Item code is required', 'error'); return; }
+  const obj = {
+    code, item: document.getElementById('inv-item').value,
+    owner: document.getElementById('inv-owner').value,
+    location: document.getElementById('inv-location').value,
+    desc1: document.getElementById('inv-desc1').value,
+    desc2: document.getElementById('inv-desc2').value,
+    desc3: document.getElementById('inv-desc3').value,
+    desc4: document.getElementById('inv-desc4').value, desc5: '',
+    status: document.getElementById('inv-status').value,
+    remark: document.getElementById('inv-remark').value,
+  };
+  if (editId) {
+    const idx = inventory.findIndex(x => x.id == editId);
+    inventory[idx] = { ...inventory[idx], ...obj };
+    showToast('Item updated successfully', 'success');
+  } else {
+    inventory.push({ id: nextInvId++, no: inventory.length + 1, ...obj });
+    showToast('Item added successfully', 'success');
+  }
+  closeModal('modal-inventory');
+  renderInventory();
+}
+
+// ============================================================
+// MAINTENANCE
+// ============================================================
+function getFilteredMaintenance() {
+  const search = document.getElementById('maint-search').value.toLowerCase();
+  const fStatus = document.getElementById('maint-filter-status').value;
+  return maintenance.filter(m =>
+    (!search || m.wo.toLowerCase().includes(search) || m.device.toLowerCase().includes(search) || m.issue.toLowerCase().includes(search)) &&
+    (!fStatus || m.status === fStatus)
+  );
+}
+
+function renderMaintenance() {
+  const data = getFilteredMaintenance();
+  const total = data.length;
+  const start = (maintPage - 1) * PER_PAGE;
+  const page = data.slice(start, start + PER_PAGE);
+  document.getElementById('maint-count').textContent = `(${total} records)`;
+  const tbody = document.getElementById('maint-tbody');
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="10"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
+    page.map(m => `
+      <tr>
+        <td style="font-weight:600;color:var(--accent)">${m.wo}</td>
+        <td style="font-size:12px">${m.dateCheck}</td>
+        <td style="font-family:monospace;font-size:12px">${m.device}</td>
+        <td style="font-size:12px">${m.desc}</td>
+        <td style="max-width:150px;font-size:12px">${m.issue}</td>
+        <td style="max-width:160px;font-size:12px;color:var(--text2)">${m.findings||'—'}</td>
+        <td style="max-width:160px;font-size:12px;color:var(--text2)">${m.recommendation||'—'}</td>
+        <td>${statusBadge(m.status)}</td>
+        <td style="font-size:12px">${m.dateComplete||'—'}</td>
+        <td><div class="actions">
+          <button class="btn btn-secondary btn-sm" onclick="editMaintenance(${m.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('maintenance',${m.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('');
+  renderPagination('maint', total, maintPage, (p) => { maintPage = p; renderMaintenance(); });
+  document.getElementById('maint-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+}
+
+function editMaintenance(id) {
+  const m = maintenance.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('maint-modal-title').textContent = 'Edit Work Order';
+  document.getElementById('maint-edit-id').value = id;
+  document.getElementById('maint-wo').value = m.wo;
+  document.getElementById('maint-date').value = m.dateCheck;
+  document.getElementById('maint-device').value = m.device;
+  document.getElementById('maint-desc').value = m.desc;
+  document.getElementById('maint-issue').value = m.issue;
+  document.getElementById('maint-findings').value = m.findings;
+  document.getElementById('maint-recommendation').value = m.recommendation;
+  document.getElementById('maint-status').value = m.status;
+  document.getElementById('maint-complete').value = m.dateComplete;
+  openModal('modal-maintenance');
+}
+
+function saveMaintenance() {
+  const editId = document.getElementById('maint-edit-id').value;
+  const wo = document.getElementById('maint-wo').value.trim();
+  const device = document.getElementById('maint-device').value.trim();
+  if (!wo || !device) { showToast('Work Order No and Device are required', 'error'); return; }
+  const obj = {
+    wo, dateCheck: document.getElementById('maint-date').value,
+    device, desc: document.getElementById('maint-desc').value,
+    issue: document.getElementById('maint-issue').value,
+    findings: document.getElementById('maint-findings').value,
+    recommendation: document.getElementById('maint-recommendation').value,
+    status: document.getElementById('maint-status').value,
+    dateComplete: document.getElementById('maint-complete').value,
+  };
+  if (editId) {
+    const idx = maintenance.findIndex(x => x.id == editId);
+    maintenance[idx] = { ...maintenance[idx], ...obj };
+    showToast('Work order updated', 'success');
+  } else {
+    maintenance.push({ id: nextMaintId++, ...obj });
+    showToast('Work order added', 'success');
+  }
+  closeModal('modal-maintenance');
+  renderMaintenance();
+}
+
+// ============================================================
+// TRANSFER
+// ============================================================
+function getFilteredTransfer() {
+  const search = document.getElementById('trans-search').value.toLowerCase();
+  return transfers.filter(t =>
+    !search || t.code.toLowerCase().includes(search) || t.from.toLowerCase().includes(search) || t.to.toLowerCase().includes(search) || (t.reason||'').toLowerCase().includes(search)
+  );
+}
+
+function renderTransfer() {
+  const data = getFilteredTransfer();
+  const total = data.length;
+  const start = (transPage - 1) * PER_PAGE;
+  const page = data.slice(start, start + PER_PAGE);
+  document.getElementById('trans-count').textContent = `(${total} records)`;
+  const tbody = document.getElementById('trans-tbody');
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="10"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
+    page.map((t, idx) => `
+      <tr>
+        <td>${start + idx + 1}</td>
+        <td style="font-size:12px">${t.date}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--accent)">${t.code}</td>
+        <td>${t.from}</td>
+        <td>${t.to}</td>
+        <td>${t.pic}</td>
+        <td style="font-size:12px;max-width:160px">${t.reason}</td>
+        <td>${t.auth}</td>
+        <td style="font-size:12px;color:var(--text2)">${t.remark||'—'}</td>
+        <td><div class="actions">
+          <button class="btn btn-secondary btn-sm" onclick="editTransfer(${t.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('transfer',${t.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('');
+  renderPagination('trans', total, transPage, (p) => { transPage = p; renderTransfer(); });
+  document.getElementById('trans-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+}
+
+function editTransfer(id) {
+  const t = transfers.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('trans-modal-title').textContent = 'Edit Transfer Record';
+  document.getElementById('trans-edit-id').value = id;
+  document.getElementById('trans-date').value = t.date;
+  document.getElementById('trans-code').value = t.code;
+  document.getElementById('trans-from').value = t.from;
+  document.getElementById('trans-to').value = t.to;
+  document.getElementById('trans-pic').value = t.pic;
+  document.getElementById('trans-auth').value = t.auth;
+  document.getElementById('trans-reason').value = t.reason;
+  document.getElementById('trans-remark').value = t.remark;
+  openModal('modal-transfer');
+}
+
+function saveTransfer() {
+  const editId = document.getElementById('trans-edit-id').value;
+  const code = document.getElementById('trans-code').value.trim();
+  const from = document.getElementById('trans-from').value.trim();
+  const to = document.getElementById('trans-to').value.trim();
+  if (!code || !from || !to) { showToast('Code, From and To are required', 'error'); return; }
+  const obj = {
+    date: document.getElementById('trans-date').value,
+    code, from, to,
+    pic: document.getElementById('trans-pic').value,
+    auth: document.getElementById('trans-auth').value,
+    reason: document.getElementById('trans-reason').value,
+    remark: document.getElementById('trans-remark').value,
+  };
+  if (editId) {
+    const idx = transfers.findIndex(x => x.id == editId);
+    transfers[idx] = { ...transfers[idx], ...obj };
+    showToast('Transfer record updated', 'success');
+  } else {
+    transfers.push({ id: nextTransId++, no: transfers.length + 1, ...obj });
+    showToast('Transfer record added', 'success');
+  }
+  closeModal('modal-transfer');
+  renderTransfer();
+}
+
+// ============================================================
+// DELETE
+// ============================================================
+function deleteRecord(type, id) {
+  deleteTarget = { type, id };
+  openModal('modal-confirm');
+}
+
+function confirmDelete() {
+  if (!deleteTarget) return;
+  const { type, id } = deleteTarget;
+  if (type === 'inventory') inventory = inventory.filter(x => x.id !== id);
+  else if (type === 'maintenance') maintenance = maintenance.filter(x => x.id !== id);
+  else if (type === 'transfer') transfers = transfers.filter(x => x.id !== id);
+  deleteTarget = null;
+  closeModal('modal-confirm');
+  showToast('Record deleted', 'success');
+  if (type === 'inventory') renderInventory();
+  else if (type === 'maintenance') renderMaintenance();
+  else renderTransfer();
+}
+
+// ============================================================
+// PAGINATION
+// ============================================================
+function renderPagination(prefix, total, current, onChange) {
+  const pages = Math.ceil(total / PER_PAGE);
+  const el = document.getElementById(prefix + '-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  for (let p = 1; p <= pages; p++) {
+    html += `<button class="page-btn ${p === current ? 'active' : ''}" onclick="(${onChange.toString()})(${p})">${p}</button>`;
+  }
+  el.innerHTML = html;
+}
+
+// ============================================================
+// EXPORT (CSV)
+// ============================================================
+function exportData() {
+  let csv = '', filename = '';
+  if (currentPage === 'inventory') {
+    csv = 'No,Code,Item,Owner,Location,Processor,Model,Storage,RAM,Status,Remark\n' +
+      inventory.map((i,idx) => [idx+1,i.code,i.item,i.owner,i.location,i.desc1,i.desc2,i.desc3,i.desc4,i.status,i.remark].map(v => `"${v||''}"`).join(',')).join('\n');
+    filename = 'AFS_Inventory.csv';
+  } else if (currentPage === 'maintenance') {
+    csv = 'Work Order,Date Checked,Device,Description,Issue,Findings,Recommendation,Status,Date Completed\n' +
+      maintenance.map(m => [m.wo,m.dateCheck,m.device,m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete].map(v => `"${v||''}"`).join(',')).join('\n');
+    filename = 'AFS_Maintenance_Log.csv';
+  } else if (currentPage === 'transfer') {
+    csv = 'No,Date,Item Code,From,To,Person in Charge,Reason,Authorized By,Remark\n' +
+      transfers.map((t,idx) => [idx+1,t.date,t.code,t.from,t.to,t.pic,t.reason,t.auth,t.remark].map(v => `"${v||''}"`).join(',')).join('\n');
+    filename = 'AFS_Transfer_Log.csv';
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${filename}`, 'success');
+}
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderDashboard();
+</script>
+</body>
+</html>
