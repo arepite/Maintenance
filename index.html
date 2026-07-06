@@ -748,6 +748,469 @@ function getSheetsKey() { return localStorage.getItem('afs_key') || ''; }
 function isSheetsConnected() { return getSheetsURL() && getSheetsKey(); }
 
 // ==============================================================
+// LANGUAGE / TRANSLATION SYSTEM
+// ==============================================================
+let currentLang = localStorage.getItem('afs_lang') || 'en';
+
+const TRANSLATIONS = {
+  en: {
+    // Sidebar
+    'nav.dashboard': 'Dashboard', 'nav.records': 'Records', 'nav.inventory': 'Inventory',
+    'nav.maintenance': 'Maintenance Log', 'nav.transfer': 'Item Transfer',
+    'nav.resources': 'Resources', 'nav.software': 'Software Library',
+    'nav.account': 'Account', 'nav.settings': 'Settings', 'nav.logout': 'Logout',
+    // Topbar
+    'dept.all': 'All Departments', 'dept.ac': 'Air Conditioner', 'dept.elec': 'Electrical', 'dept.civil': 'Civil',
+    'btn.push': '⬆️ Push', 'btn.sync': '🔄 Sync', 'btn.export': '📥 Export', 'btn.add': '+ Add Record',
+    // Dashboard
+    'dash.title': 'Dashboard', 'dash.sub': 'Overview of AFS IT assets and maintenance',
+    'dash.total': 'Total Devices', 'dash.total.sub': 'Across both branches',
+    'dash.operational': 'Operational', 'dash.operational.sub': 'Status: OK',
+    'dash.attention': 'Need Attention', 'dash.attention.sub': 'Repair / Check needed',
+    'dash.openwo': 'Open Work Orders', 'dash.openwo.sub': 'Pending / In Progress',
+    'dash.status': 'Device Status', 'dash.location': 'By Location',
+    'dash.types': 'Device Types', 'dash.recent': 'Recent Maintenance',
+    'dash.warranty': '⚠️ Warranty Alerts', 'dash.nodata': t('dash.nodata'),
+    'dash.nojobs': t('dash.nojobs'),
+    // Inventory
+    'inv.title': 'Inventory', 'inv.sub': 'All IT assets across both branches',
+    'inv.search': '🔍 Search...', 'inv.all.status': 'All Status',
+    'inv.all.warranty': 'All Warranty', 'inv.expiring': 'Expiring Soon', 'inv.expired': 'Expired',
+    'inv.col.no': '#', 'inv.col.dept': 'Dept', 'inv.col.code': 'Code', 'inv.col.item': 'Item',
+    'inv.col.owner': 'Assigned To', 'inv.col.location': 'Location',
+    'inv.col.d1': 'Detail 1', 'inv.col.d2': 'Detail 2',
+    'inv.col.warranty': 'Warranty', 'inv.col.status': 'Status',
+    'inv.col.remark': 'Remark', 'inv.col.actions': 'Actions',
+    'inv.empty': t('inv.empty'),
+    // Maintenance
+    'maint.title': 'Maintenance Log', 'maint.sub': 'Work orders and maintenance history',
+    'maint.search': '🔍 Search WO, device...', 'maint.all.status': 'All Status',
+    'maint.col.dept': 'Dept', 'maint.col.wo': 'Work Order', 'maint.col.date': 'Date',
+    'maint.col.device': 'Device', 'maint.col.issue': 'Issue', 'maint.col.findings': 'Findings',
+    'maint.col.rec': 'Recommendation', 'maint.col.status': 'Status',
+    'maint.col.completed': 'Completed', 'maint.col.photos': 'Photos', 'maint.col.actions': 'Actions',
+    'maint.empty': t('maint.empty'),
+    // Transfer
+    'trans.title': 'Item Transfer', 'trans.sub': 'Track item movements between locations',
+    'trans.search': '🔍 Search code, location...',
+    'trans.col.no': '#', 'trans.col.dept': 'Dept', 'trans.col.date': 'Date',
+    'trans.col.code': 'Item Code', 'trans.col.from': 'From', 'trans.col.to': 'To',
+    'trans.col.person': 'Person', 'trans.col.reason': 'Reason',
+    'trans.col.auth': 'Auth By', 'trans.col.remark': 'Remark', 'trans.col.actions': 'Actions',
+    'trans.empty': t('maint.empty'),
+    // Software
+    'soft.title': 'Software Library', 'soft.sub': 'Installers, licenses and download links',
+    'soft.search': '🔍 Search software...', 'soft.all.cat': 'All Categories',
+    'soft.col.name': 'Software', 'soft.col.cat': 'Category', 'soft.col.ver': 'Version',
+    'soft.col.key': 'License Key', 'soft.col.source': 'Source', 'soft.col.notes': 'Notes',
+    'soft.col.dl': 'Download', 'soft.col.actions': 'Actions', 'soft.empty': t('soft.empty'),
+    'soft.get': '⬇️ Get', 'soft.hidden': '•••• hidden',
+    // Settings
+    'set.title': 'Settings', 'set.sub': 'Connection and account settings',
+    'set.sheets': '🔗 Google Sheets Connection', 'set.url': 'Apps Script URL',
+    'set.key': 'Secret Key', 'set.save.conn': 'Save Connection',
+    'set.note': 'These are saved in your browser only — not visible in source code.',
+    'set.password': '👤 Change My Password', 'set.cur.pass': 'Current Password',
+    'set.new.pass': 'New Password', 'set.conf.pass': 'Confirm New Password',
+    'set.update.pass': 'Update Password',
+    'set.data': '📊 Data Management', 'set.push.all': '⬆️ Push All Data to Sheets',
+    'set.pull': '🔄 Pull Data from Sheets',
+    'set.data.note': 'Use "Push" once after initial setup. Use "Sync" to refresh data on any device.',
+    // Login
+    'login.title': 'AFS IT System', 'login.sub': 'Authorized personnel only',
+    'login.username': 'Username', 'login.password': 'Password',
+    'login.btn': 'Sign In', 'login.checking': 'Checking credentials...',
+    'login.error': 'Incorrect username or password',
+    'login.fill': 'Please enter username and password',
+    'login.no.sheets': 'Google Sheets not connected. Go to Settings after setup.',
+    'login.no.reach': 'Cannot reach server. Check your connection.',
+    // Modals — Inventory
+    'inv.modal.add': 'Add Inventory Item', 'inv.modal.edit': 'Edit Inventory Item',
+    'inv.form.dept': 'Department *', 'inv.form.code': 'Item Code *',
+    'inv.form.type': 'Item Type *', 'inv.form.owner': 'Assigned To / Owner',
+    'inv.form.location': 'Location *', 'inv.form.warranty': 'Warranty Expiry',
+    'inv.form.status': 'Status *', 'inv.form.remark': 'Remark',
+    // Modals — Maintenance
+    'maint.modal.add': 'Add Work Order', 'maint.modal.edit': 'Edit Work Order',
+    'maint.form.dept': 'Department *', 'maint.form.wo': 'Work Order No *',
+    'maint.form.date': 'Date Checked *', 'maint.form.status': 'Status *',
+    'maint.form.device': 'Device Code *', 'maint.form.desc': 'Device Description',
+    'maint.form.issue': 'Issue / Problem *', 'maint.form.findings': 'Findings',
+    'maint.form.rec': 'Recommendation / Action Taken', 'maint.form.complete': 'Date Completed',
+    'maint.form.photos': '📷 Photos', 'maint.form.before': 'Before Photo',
+    'maint.form.after': 'After Photo', 'maint.form.click': '📷 Click to upload',
+    'maint.form.before.sub': 'Photo before maintenance', 'maint.form.after.sub': 'Photo after maintenance',
+    'maint.form.uploading': 'Uploading...',
+    // Modals — Transfer
+    'trans.modal.add': 'Add Transfer Record', 'trans.modal.edit': 'Edit Transfer Record',
+    'trans.form.dept': 'Department *', 'trans.form.date': 'Transfer Date *',
+    'trans.form.code': 'Item Code *', 'trans.form.from': 'Transfer From *',
+    'trans.form.to': 'Transfer To *', 'trans.form.person': 'Person in Charge',
+    'trans.form.auth': 'Authorized By', 'trans.form.reason': 'Reason / Purpose',
+    'trans.form.remark': 'Remark',
+    // Modals — Software
+    'soft.modal.add': 'Add Software', 'soft.modal.edit': 'Edit Software',
+    'soft.form.name': 'Software Name *', 'soft.form.cat': 'Category *',
+    'soft.form.ver': 'Version', 'soft.form.key': 'License Key',
+    'soft.form.source': 'Source *', 'soft.form.link': 'Download Link *',
+    'soft.form.notes': 'Notes',
+    // Buttons & common
+    'btn.cancel': 'Cancel', 'btn.save': 'Save', 'btn.save.item': 'Save Item',
+    'btn.save.wo': 'Save Work Order', 'btn.save.transfer': 'Save Transfer',
+    'btn.save.soft': 'Save Software', 'btn.delete': 'Delete', 'btn.edit': '✏️', 'btn.trash': '🗑️',
+    'confirm.delete.title': 'Confirm Delete',
+    'confirm.delete.msg': t('confirm.delete.msg'),
+    // Toast messages
+    'toast.item.added': 'Item added', 'toast.item.updated': 'Item updated',
+    'toast.wo.added': 'Work order added', 'toast.wo.updated': 'Work order updated',
+    'toast.trans.added': 'Transfer added', 'toast.trans.updated': 'Transfer updated',
+    'toast.soft.added': 'Software added', 'toast.soft.updated': 'Software updated',
+    'toast.deleted': 'Record deleted', 'toast.settings.saved': 'Settings saved to browser',
+    'toast.pass.updated': 'Password updated successfully', 'toast.pass.mismatch': 'New passwords do not match',
+    'toast.pass.wrong': 'Current password is incorrect', 'toast.pass.fill': 'Fill in all fields',
+    'toast.synced': 'Data synced from Google Sheets', 'toast.sync.fail': 'Could not reach Google Sheets',
+    'toast.pushed': 'All data pushed to Google Sheets', 'toast.push.fail': 'Could not save to Sheets',
+    'toast.photo.ok': 'Photo uploaded successfully', 'toast.photo.fail': t('toast.photo.fail'),
+    'toast.photo.local': 'Photo loaded locally (connect Sheets to save permanently)',
+    'toast.need.key': 'Go to Settings and enter your Sheets key first',
+    'toast.need.setup': 'Set Sheets key in Settings first',
+    'toast.code.required': 'Item code is required', 'toast.wo.required': 'Work Order No and Device are required',
+    'toast.trans.required': 'Code, From and To are required', 'toast.soft.required': 'Name and link are required',
+    // Pagination
+    'page.showing': 'Showing', 'page.of': 'of',
+    // Warranty display
+    'warranty.expired': '⛔ Expired', 'warranty.left': 'd left',
+    // Sync status
+    'sync.local': 'Local', 'sync.syncing': 'Syncing...', 'sync.synced': 'Synced',
+    'sync.saving': 'Saving...', 'sync.saved': 'Saved', 'sync.failed': 'Save failed',
+    'sync.fail.sync': 'Sync failed', 'sync.ready': 'Ready',
+    // Photo viewer
+    'photo.close': '✕ Close',
+    // Dept filter
+    'dept.filter.all': 'All Departments',
+  },
+
+  ms: {
+    'nav.dashboard': 'Papan Pemuka', 'nav.records': 'Rekod', 'nav.inventory': 'Inventori',
+    'nav.maintenance': 'Log Penyelenggaraan', 'nav.transfer': 'Pindahan Item',
+    'nav.resources': 'Sumber', 'nav.software': 'Perpustakaan Perisian',
+    'nav.account': 'Akaun', 'nav.settings': 'Tetapan', 'nav.logout': 'Log Keluar',
+    'dept.all': 'Semua Jabatan', 'dept.ac': 'Penyaman Udara', 'dept.elec': 'Elektrikal', 'dept.civil': 'Sivil',
+    'btn.push': '⬆️ Hantar', 'btn.sync': '🔄 Segerak', 'btn.export': '📥 Eksport', 'btn.add': '+ Tambah Rekod',
+    'dash.title': 'Papan Pemuka', 'dash.sub': 'Gambaran keseluruhan aset IT dan penyelenggaraan AFS',
+    'dash.total': 'Jumlah Peranti', 'dash.total.sub': 'Merentasi kedua-dua cawangan',
+    'dash.operational': 'Beroperasi', 'dash.operational.sub': 'Status: OK',
+    'dash.attention': 'Perlu Perhatian', 'dash.attention.sub': 'Perlu Baiki / Semak',
+    'dash.openwo': 'Pesanan Kerja Terbuka', 'dash.openwo.sub': 'Belum Selesai / Dalam Proses',
+    'dash.status': 'Status Peranti', 'dash.location': 'Mengikut Lokasi',
+    'dash.types': 'Jenis Peranti', 'dash.recent': 'Penyelenggaraan Terkini',
+    'dash.warranty': '⚠️ Amaran Waranti', 'dash.nodata': 'Tiada data',
+    'dash.nojobs': 'Tiada kerja terkini',
+    'inv.title': 'Inventori', 'inv.sub': 'Semua aset IT merentasi kedua-dua cawangan',
+    'inv.search': '🔍 Cari...', 'inv.all.status': 'Semua Status',
+    'inv.all.warranty': 'Semua Waranti', 'inv.expiring': 'Hampir Tamat', 'inv.expired': 'Tamat Tempoh',
+    'inv.col.no': '#', 'inv.col.dept': 'Jabatan', 'inv.col.code': 'Kod', 'inv.col.item': 'Item',
+    'inv.col.owner': 'Ditetapkan Kepada', 'inv.col.location': 'Lokasi',
+    'inv.col.d1': 'Butiran 1', 'inv.col.d2': 'Butiran 2',
+    'inv.col.warranty': 'Waranti', 'inv.col.status': 'Status',
+    'inv.col.remark': 'Catatan', 'inv.col.actions': 'Tindakan',
+    'inv.empty': 'Tiada item dijumpai',
+    'maint.title': 'Log Penyelenggaraan', 'maint.sub': 'Pesanan kerja dan sejarah penyelenggaraan',
+    'maint.search': '🔍 Cari PK, peranti...', 'maint.all.status': 'Semua Status',
+    'maint.col.dept': 'Jabatan', 'maint.col.wo': 'Pesanan Kerja', 'maint.col.date': 'Tarikh',
+    'maint.col.device': 'Peranti', 'maint.col.issue': 'Masalah', 'maint.col.findings': 'Penemuan',
+    'maint.col.rec': 'Cadangan', 'maint.col.status': 'Status',
+    'maint.col.completed': 'Selesai', 'maint.col.photos': 'Gambar', 'maint.col.actions': 'Tindakan',
+    'maint.empty': 'Tiada rekod dijumpai',
+    'trans.title': 'Pindahan Item', 'trans.sub': 'Jejak pergerakan item antara lokasi',
+    'trans.search': '🔍 Cari kod, lokasi...',
+    'trans.col.no': '#', 'trans.col.dept': 'Jabatan', 'trans.col.date': 'Tarikh',
+    'trans.col.code': 'Kod Item', 'trans.col.from': 'Dari', 'trans.col.to': 'Ke',
+    'trans.col.person': 'Petugas', 'trans.col.reason': 'Sebab',
+    'trans.col.auth': 'Diluluskan Oleh', 'trans.col.remark': 'Catatan', 'trans.col.actions': 'Tindakan',
+    'trans.empty': 'Tiada rekod dijumpai',
+    'soft.title': 'Perpustakaan Perisian', 'soft.sub': 'Pemasang, lesen dan pautan muat turun',
+    'soft.search': '🔍 Cari perisian...', 'soft.all.cat': 'Semua Kategori',
+    'soft.col.name': 'Perisian', 'soft.col.cat': 'Kategori', 'soft.col.ver': 'Versi',
+    'soft.col.key': 'Kunci Lesen', 'soft.col.source': 'Sumber', 'soft.col.notes': 'Nota',
+    'soft.col.dl': 'Muat Turun', 'soft.col.actions': 'Tindakan', 'soft.empty': 'Tiada perisian dijumpai',
+    'soft.get': '⬇️ Dapatkan', 'soft.hidden': '•••• tersembunyi',
+    'set.title': 'Tetapan', 'set.sub': 'Tetapan sambungan dan akaun',
+    'set.sheets': '🔗 Sambungan Google Sheets', 'set.url': 'URL Skrip Aplikasi',
+    'set.key': 'Kunci Rahsia', 'set.save.conn': 'Simpan Sambungan',
+    'set.note': 'Disimpan dalam pelayar anda sahaja — tidak kelihatan dalam kod sumber.',
+    'set.password': '👤 Tukar Kata Laluan', 'set.cur.pass': 'Kata Laluan Semasa',
+    'set.new.pass': 'Kata Laluan Baru', 'set.conf.pass': 'Sahkan Kata Laluan Baru',
+    'set.update.pass': 'Kemaskini Kata Laluan',
+    'set.data': '📊 Pengurusan Data', 'set.push.all': '⬆️ Hantar Semua Data ke Sheets',
+    'set.pull': '🔄 Ambil Data dari Sheets',
+    'set.data.note': 'Guna "Hantar" sekali selepas persediaan awal. Guna "Segerak" untuk muat semula data di mana-mana peranti.',
+    'login.title': 'Sistem IT AFS', 'login.sub': 'Kakitangan yang diberi kuasa sahaja',
+    'login.username': 'Nama Pengguna', 'login.password': 'Kata Laluan',
+    'login.btn': 'Log Masuk', 'login.checking': 'Menyemak kelayakan...',
+    'login.error': 'Nama pengguna atau kata laluan salah',
+    'login.fill': 'Sila masukkan nama pengguna dan kata laluan',
+    'login.no.sheets': 'Google Sheets tidak disambung. Pergi ke Tetapan selepas persediaan.',
+    'login.no.reach': 'Tidak dapat mencapai pelayan. Semak sambungan anda.',
+    'inv.modal.add': 'Tambah Item Inventori', 'inv.modal.edit': 'Edit Item Inventori',
+    'inv.form.dept': 'Jabatan *', 'inv.form.code': 'Kod Item *',
+    'inv.form.type': 'Jenis Item *', 'inv.form.owner': 'Ditetapkan Kepada / Pemilik',
+    'inv.form.location': 'Lokasi *', 'inv.form.warranty': 'Tarikh Tamat Waranti',
+    'inv.form.status': 'Status *', 'inv.form.remark': 'Catatan',
+    'maint.modal.add': 'Tambah Pesanan Kerja', 'maint.modal.edit': 'Edit Pesanan Kerja',
+    'maint.form.dept': 'Jabatan *', 'maint.form.wo': 'No. Pesanan Kerja *',
+    'maint.form.date': 'Tarikh Diperiksa *', 'maint.form.status': 'Status *',
+    'maint.form.device': 'Kod Peranti *', 'maint.form.desc': 'Penerangan Peranti',
+    'maint.form.issue': 'Masalah / Isu *', 'maint.form.findings': 'Penemuan',
+    'maint.form.rec': 'Cadangan / Tindakan Diambil', 'maint.form.complete': 'Tarikh Selesai',
+    'maint.form.photos': '📷 Gambar', 'maint.form.before': 'Gambar Sebelum',
+    'maint.form.after': 'Gambar Selepas', 'maint.form.click': '📷 Klik untuk muat naik',
+    'maint.form.before.sub': 'Gambar sebelum penyelenggaraan', 'maint.form.after.sub': 'Gambar selepas penyelenggaraan',
+    'maint.form.uploading': 'Memuat naik...',
+    'trans.modal.add': 'Tambah Rekod Pindahan', 'trans.modal.edit': 'Edit Rekod Pindahan',
+    'trans.form.dept': 'Jabatan *', 'trans.form.date': 'Tarikh Pindahan *',
+    'trans.form.code': 'Kod Item *', 'trans.form.from': 'Pindahan Dari *',
+    'trans.form.to': 'Pindahan Ke *', 'trans.form.person': 'Petugas',
+    'trans.form.auth': 'Diluluskan Oleh', 'trans.form.reason': 'Sebab / Tujuan',
+    'trans.form.remark': 'Catatan',
+    'soft.modal.add': 'Tambah Perisian', 'soft.modal.edit': 'Edit Perisian',
+    'soft.form.name': 'Nama Perisian *', 'soft.form.cat': 'Kategori *',
+    'soft.form.ver': 'Versi', 'soft.form.key': 'Kunci Lesen',
+    'soft.form.source': 'Sumber *', 'soft.form.link': 'Pautan Muat Turun *',
+    'soft.form.notes': 'Nota',
+    'btn.cancel': 'Batal', 'btn.save': 'Simpan', 'btn.save.item': 'Simpan Item',
+    'btn.save.wo': 'Simpan Pesanan Kerja', 'btn.save.transfer': 'Simpan Pindahan',
+    'btn.save.soft': 'Simpan Perisian', 'btn.delete': 'Padam', 'btn.edit': '✏️', 'btn.trash': '🗑️',
+    'confirm.delete.title': 'Sahkan Pemadaman',
+    'confirm.delete.msg': 'Adakah anda pasti untuk memadam rekod ini? Tindakan ini tidak boleh dibatalkan.',
+    'toast.item.added': 'Item ditambah', 'toast.item.updated': 'Item dikemaskini',
+    'toast.wo.added': 'Pesanan kerja ditambah', 'toast.wo.updated': 'Pesanan kerja dikemaskini',
+    'toast.trans.added': 'Pindahan ditambah', 'toast.trans.updated': 'Pindahan dikemaskini',
+    'toast.soft.added': 'Perisian ditambah', 'toast.soft.updated': 'Perisian dikemaskini',
+    'toast.deleted': 'Rekod dipadam', 'toast.settings.saved': 'Tetapan disimpan dalam pelayar',
+    'toast.pass.updated': 'Kata laluan berjaya dikemaskini', 'toast.pass.mismatch': 'Kata laluan baru tidak sepadan',
+    'toast.pass.wrong': 'Kata laluan semasa tidak betul', 'toast.pass.fill': 'Isi semua medan',
+    'toast.synced': 'Data disegerakkan dari Google Sheets', 'toast.sync.fail': 'Tidak dapat mencapai Google Sheets',
+    'toast.pushed': 'Semua data dihantar ke Google Sheets', 'toast.push.fail': 'Tidak dapat simpan ke Sheets',
+    'toast.photo.ok': 'Gambar berjaya dimuat naik', 'toast.photo.fail': 'Muat naik gagal',
+    'toast.photo.local': 'Gambar dimuatkan secara tempatan (sambung Sheets untuk simpan secara kekal)',
+    'toast.need.key': 'Pergi ke Tetapan dan masukkan kunci Sheets anda dahulu',
+    'toast.need.setup': 'Tetapkan kunci Sheets dalam Tetapan dahulu',
+    'toast.code.required': 'Kod item diperlukan', 'toast.wo.required': 'No. Pesanan Kerja dan Peranti diperlukan',
+    'toast.trans.required': 'Kod, Dari dan Ke diperlukan', 'toast.soft.required': 'Nama dan pautan diperlukan',
+    'page.showing': 'Menunjukkan', 'page.of': 'daripada',
+    'warranty.expired': '⛔ Tamat Tempoh', 'warranty.left': 'hari lagi',
+    'sync.local': 'Tempatan', 'sync.syncing': 'Menyegerak...', 'sync.synced': 'Disegerak',
+    'sync.saving': 'Menyimpan...', 'sync.saved': 'Disimpan', 'sync.failed': 'Simpan gagal',
+    'sync.fail.sync': 'Segerak gagal', 'sync.ready': 'Sedia',
+    'photo.close': '✕ Tutup', 'dept.filter.all': 'Semua Jabatan',
+  },
+
+  id: {
+    'nav.dashboard': 'Dasbor', 'nav.records': 'Rekaman', 'nav.inventory': 'Inventaris',
+    'nav.maintenance': 'Log Pemeliharaan', 'nav.transfer': 'Transfer Item',
+    'nav.resources': 'Sumber Daya', 'nav.software': 'Perpustakaan Perangkat Lunak',
+    'nav.account': 'Akun', 'nav.settings': 'Pengaturan', 'nav.logout': 'Keluar',
+    'dept.all': 'Semua Departemen', 'dept.ac': 'AC / Pendingin Udara', 'dept.elec': 'Elektrikal', 'dept.civil': 'Sipil',
+    'btn.push': '⬆️ Kirim', 'btn.sync': '🔄 Sinkronkan', 'btn.export': '📥 Ekspor', 'btn.add': '+ Tambah Rekaman',
+    'dash.title': 'Dasbor', 'dash.sub': 'Gambaran umum aset IT dan pemeliharaan AFS',
+    'dash.total': 'Total Perangkat', 'dash.total.sub': 'Di seluruh cabang',
+    'dash.operational': 'Beroperasi', 'dash.operational.sub': 'Status: OK',
+    'dash.attention': 'Perlu Perhatian', 'dash.attention.sub': 'Perlu Diperbaiki / Diperiksa',
+    'dash.openwo': 'Perintah Kerja Terbuka', 'dash.openwo.sub': 'Tertunda / Sedang Berjalan',
+    'dash.status': 'Status Perangkat', 'dash.location': 'Berdasarkan Lokasi',
+    'dash.types': 'Jenis Perangkat', 'dash.recent': 'Pemeliharaan Terbaru',
+    'dash.warranty': '⚠️ Peringatan Garansi', 'dash.nodata': 'Tidak ada data',
+    'dash.nojobs': 'Tidak ada pekerjaan terbaru',
+    'inv.title': 'Inventaris', 'inv.sub': 'Semua aset IT di seluruh cabang',
+    'inv.search': '🔍 Cari...', 'inv.all.status': 'Semua Status',
+    'inv.all.warranty': 'Semua Garansi', 'inv.expiring': 'Segera Berakhir', 'inv.expired': 'Kadaluarsa',
+    'inv.col.no': '#', 'inv.col.dept': 'Dept', 'inv.col.code': 'Kode', 'inv.col.item': 'Item',
+    'inv.col.owner': 'Ditugaskan Ke', 'inv.col.location': 'Lokasi',
+    'inv.col.d1': 'Detail 1', 'inv.col.d2': 'Detail 2',
+    'inv.col.warranty': 'Garansi', 'inv.col.status': 'Status',
+    'inv.col.remark': 'Catatan', 'inv.col.actions': 'Aksi',
+    'inv.empty': 'Tidak ada item ditemukan',
+    'maint.title': 'Log Pemeliharaan', 'maint.sub': 'Perintah kerja dan riwayat pemeliharaan',
+    'maint.search': '🔍 Cari PK, perangkat...', 'maint.all.status': 'Semua Status',
+    'maint.col.dept': 'Dept', 'maint.col.wo': 'Perintah Kerja', 'maint.col.date': 'Tanggal',
+    'maint.col.device': 'Perangkat', 'maint.col.issue': 'Masalah', 'maint.col.findings': 'Temuan',
+    'maint.col.rec': 'Rekomendasi', 'maint.col.status': 'Status',
+    'maint.col.completed': 'Selesai', 'maint.col.photos': 'Foto', 'maint.col.actions': 'Aksi',
+    'maint.empty': 'Tidak ada rekaman ditemukan',
+    'trans.title': 'Transfer Item', 'trans.sub': 'Lacak pergerakan item antar lokasi',
+    'trans.search': '🔍 Cari kode, lokasi...',
+    'trans.col.no': '#', 'trans.col.dept': 'Dept', 'trans.col.date': 'Tanggal',
+    'trans.col.code': 'Kode Item', 'trans.col.from': 'Dari', 'trans.col.to': 'Ke',
+    'trans.col.person': 'Penanggung Jawab', 'trans.col.reason': 'Alasan',
+    'trans.col.auth': 'Disetujui Oleh', 'trans.col.remark': 'Catatan', 'trans.col.actions': 'Aksi',
+    'trans.empty': 'Tidak ada rekaman ditemukan',
+    'soft.title': 'Perpustakaan Perangkat Lunak', 'soft.sub': 'Installer, lisensi, dan tautan unduhan',
+    'soft.search': '🔍 Cari perangkat lunak...', 'soft.all.cat': 'Semua Kategori',
+    'soft.col.name': 'Perangkat Lunak', 'soft.col.cat': 'Kategori', 'soft.col.ver': 'Versi',
+    'soft.col.key': 'Kunci Lisensi', 'soft.col.source': 'Sumber', 'soft.col.notes': 'Catatan',
+    'soft.col.dl': 'Unduh', 'soft.col.actions': 'Aksi', 'soft.empty': 'Tidak ada perangkat lunak ditemukan',
+    'soft.get': '⬇️ Dapatkan', 'soft.hidden': '•••• tersembunyi',
+    'set.title': 'Pengaturan', 'set.sub': 'Pengaturan koneksi dan akun',
+    'set.sheets': '🔗 Koneksi Google Sheets', 'set.url': 'URL Skrip Aplikasi',
+    'set.key': 'Kunci Rahasia', 'set.save.conn': 'Simpan Koneksi',
+    'set.note': 'Disimpan di browser Anda saja — tidak terlihat di kode sumber.',
+    'set.password': '👤 Ganti Kata Sandi', 'set.cur.pass': 'Kata Sandi Saat Ini',
+    'set.new.pass': 'Kata Sandi Baru', 'set.conf.pass': 'Konfirmasi Kata Sandi Baru',
+    'set.update.pass': 'Perbarui Kata Sandi',
+    'set.data': '📊 Manajemen Data', 'set.push.all': '⬆️ Kirim Semua Data ke Sheets',
+    'set.pull': '🔄 Ambil Data dari Sheets',
+    'set.data.note': 'Gunakan "Kirim" sekali setelah pengaturan awal. Gunakan "Sinkronkan" untuk menyegarkan data di perangkat mana pun.',
+    'login.title': 'Sistem IT AFS', 'login.sub': 'Hanya personel yang berwenang',
+    'login.username': 'Nama Pengguna', 'login.password': 'Kata Sandi',
+    'login.btn': 'Masuk', 'login.checking': 'Memeriksa kredensial...',
+    'login.error': 'Nama pengguna atau kata sandi salah',
+    'login.fill': 'Silakan masukkan nama pengguna dan kata sandi',
+    'login.no.sheets': 'Google Sheets belum terhubung. Pergi ke Pengaturan setelah penyiapan.',
+    'login.no.reach': 'Tidak dapat menjangkau server. Periksa koneksi Anda.',
+    'inv.modal.add': 'Tambah Item Inventaris', 'inv.modal.edit': 'Edit Item Inventaris',
+    'inv.form.dept': 'Departemen *', 'inv.form.code': 'Kode Item *',
+    'inv.form.type': 'Jenis Item *', 'inv.form.owner': 'Ditugaskan Ke / Pemilik',
+    'inv.form.location': 'Lokasi *', 'inv.form.warranty': 'Tanggal Berakhir Garansi',
+    'inv.form.status': 'Status *', 'inv.form.remark': 'Catatan',
+    'maint.modal.add': 'Tambah Perintah Kerja', 'maint.modal.edit': 'Edit Perintah Kerja',
+    'maint.form.dept': 'Departemen *', 'maint.form.wo': 'No. Perintah Kerja *',
+    'maint.form.date': 'Tanggal Diperiksa *', 'maint.form.status': 'Status *',
+    'maint.form.device': 'Kode Perangkat *', 'maint.form.desc': 'Deskripsi Perangkat',
+    'maint.form.issue': 'Masalah / Isu *', 'maint.form.findings': 'Temuan',
+    'maint.form.rec': 'Rekomendasi / Tindakan Diambil', 'maint.form.complete': 'Tanggal Selesai',
+    'maint.form.photos': '📷 Foto', 'maint.form.before': 'Foto Sebelum',
+    'maint.form.after': 'Foto Sesudah', 'maint.form.click': '📷 Klik untuk unggah',
+    'maint.form.before.sub': 'Foto sebelum pemeliharaan', 'maint.form.after.sub': 'Foto setelah pemeliharaan',
+    'maint.form.uploading': 'Mengunggah...',
+    'trans.modal.add': 'Tambah Rekaman Transfer', 'trans.modal.edit': 'Edit Rekaman Transfer',
+    'trans.form.dept': 'Departemen *', 'trans.form.date': 'Tanggal Transfer *',
+    'trans.form.code': 'Kode Item *', 'trans.form.from': 'Transfer Dari *',
+    'trans.form.to': 'Transfer Ke *', 'trans.form.person': 'Penanggung Jawab',
+    'trans.form.auth': 'Disetujui Oleh', 'trans.form.reason': 'Alasan / Tujuan',
+    'trans.form.remark': 'Catatan',
+    'soft.modal.add': 'Tambah Perangkat Lunak', 'soft.modal.edit': 'Edit Perangkat Lunak',
+    'soft.form.name': 'Nama Perangkat Lunak *', 'soft.form.cat': 'Kategori *',
+    'soft.form.ver': 'Versi', 'soft.form.key': 'Kunci Lisensi',
+    'soft.form.source': 'Sumber *', 'soft.form.link': 'Tautan Unduhan *',
+    'soft.form.notes': 'Catatan',
+    'btn.cancel': 'Batal', 'btn.save': 'Simpan', 'btn.save.item': 'Simpan Item',
+    'btn.save.wo': 'Simpan Perintah Kerja', 'btn.save.transfer': 'Simpan Transfer',
+    'btn.save.soft': 'Simpan Perangkat Lunak', 'btn.delete': 'Hapus', 'btn.edit': '✏️', 'btn.trash': '🗑️',
+    'confirm.delete.title': 'Konfirmasi Penghapusan',
+    'confirm.delete.msg': 'Apakah Anda yakin ingin menghapus rekaman ini? Tindakan ini tidak dapat dibatalkan.',
+    'toast.item.added': 'Item ditambahkan', 'toast.item.updated': 'Item diperbarui',
+    'toast.wo.added': 'Perintah kerja ditambahkan', 'toast.wo.updated': 'Perintah kerja diperbarui',
+    'toast.trans.added': 'Transfer ditambahkan', 'toast.trans.updated': 'Transfer diperbarui',
+    'toast.soft.added': 'Perangkat lunak ditambahkan', 'toast.soft.updated': 'Perangkat lunak diperbarui',
+    'toast.deleted': 'Rekaman dihapus', 'toast.settings.saved': 'Pengaturan disimpan di browser',
+    'toast.pass.updated': 'Kata sandi berhasil diperbarui', 'toast.pass.mismatch': 'Kata sandi baru tidak cocok',
+    'toast.pass.wrong': 'Kata sandi saat ini salah', 'toast.pass.fill': 'Isi semua kolom',
+    'toast.synced': 'Data disinkronkan dari Google Sheets', 'toast.sync.fail': 'Tidak dapat menjangkau Google Sheets',
+    'toast.pushed': 'Semua data dikirim ke Google Sheets', 'toast.push.fail': 'Tidak dapat menyimpan ke Sheets',
+    'toast.photo.ok': 'Foto berhasil diunggah', 'toast.photo.fail': 'Unggah gagal',
+    'toast.photo.local': 'Foto dimuat secara lokal (hubungkan Sheets untuk menyimpan secara permanen)',
+    'toast.need.key': 'Pergi ke Pengaturan dan masukkan kunci Sheets Anda terlebih dahulu',
+    'toast.need.setup': 'Atur kunci Sheets di Pengaturan terlebih dahulu',
+    'toast.code.required': 'Kode item diperlukan', 'toast.wo.required': 'No. Perintah Kerja dan Perangkat diperlukan',
+    'toast.trans.required': 'Kode, Dari, dan Ke diperlukan', 'toast.soft.required': 'Nama dan tautan diperlukan',
+    'page.showing': 'Menampilkan', 'page.of': 'dari',
+    'warranty.expired': '⛔ Kadaluarsa', 'warranty.left': 'hari lagi',
+    'sync.local': 'Lokal', 'sync.syncing': 'Menyinkronkan...', 'sync.synced': 'Disinkronkan',
+    'sync.saving': 'Menyimpan...', 'sync.saved': 'Disimpan', 'sync.failed': 'Simpan gagal',
+    'sync.fail.sync': 'Sinkronisasi gagal', 'sync.ready': 'Siap',
+    'photo.close': '✕ Tutup', 'dept.filter.all': 'Semua Departemen',
+  }
+};
+
+function t(key) {
+  return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
+         (TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) || key;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('afs_lang', lang);
+  document.getElementById('lang-switcher').value = lang;
+  applyTranslations();
+  // Re-render current page to apply translations to dynamic content
+  if (currentPage === 'dashboard') renderDashboard();
+  else if (currentPage === 'inventory') renderInventory();
+  else if (currentPage === 'maintenance') renderMaintenance();
+  else if (currentPage === 'transfer') renderTransfer();
+  else if (currentPage === 'software') renderSoftware();
+  else if (currentPage === 'settings') loadSettings();
+}
+
+function applyTranslations() {
+  // Sidebar nav
+  const navMap = {
+    'dashboard': 'nav.dashboard', 'inventory': 'nav.inventory',
+    'maintenance': 'nav.maintenance', 'transfer': 'nav.transfer',
+    'software': 'nav.software', 'settings': 'nav.settings', 'logout': 'nav.logout'
+  };
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const onclick = el.getAttribute('onclick') || '';
+    const txt = el.textContent.trim().toLowerCase();
+    for (const [page, key] of Object.entries(navMap)) {
+      if (onclick.includes(page) || txt.includes(page)) {
+        const icon = el.querySelector('.icon');
+        const iconHTML = icon ? icon.outerHTML : '';
+        el.innerHTML = iconHTML + ' ' + t(key);
+        if (icon) el.insertBefore(icon, el.firstChild);
+        break;
+      }
+    }
+  });
+  // Nav sections
+  const sections = document.querySelectorAll('.nav-section');
+  const sectionKeys = ['nav.dashboard', 'nav.records', 'nav.resources', 'nav.account'];
+  const sectionTexts = { 'Main': 'nav.dashboard', 'Records': 'nav.records', 'Resources': 'nav.resources', 'Account': 'nav.account' };
+  sections.forEach(el => {
+    const txt = el.textContent.trim();
+    if (txt === 'Main') el.textContent = t('nav.dashboard') === t('nav.dashboard') ? 'Main' : t('nav.dashboard');
+    else if (txt === 'Records' || txt === 'Rekod' || txt === 'Rekaman') el.textContent = t('nav.records');
+    else if (txt === 'Resources' || txt === 'Sumber' || txt === 'Sumber Daya') el.textContent = t('nav.resources');
+    else if (txt === 'Account' || txt === 'Akaun' || txt === 'Akun') el.textContent = t('nav.account');
+  });
+  // Topbar buttons
+  const pushBtn = document.querySelector('button[onclick="initialPushToSheets()"]');
+  if (pushBtn) pushBtn.textContent = t('btn.push');
+  const syncBtn = document.querySelector('button[onclick="syncFromSheets()"]');
+  if (syncBtn) syncBtn.textContent = t('btn.sync');
+  const exportBtn = document.querySelector('button[onclick="exportData()"]');
+  if (exportBtn) exportBtn.textContent = t('btn.export');
+  const addBtn = document.getElementById('add-btn');
+  if (addBtn) addBtn.textContent = t('btn.add');
+  // Dept filter options
+  const deptFilter = document.getElementById('dept-filter');
+  if (deptFilter) {
+    deptFilter.options[0].text = t('dept.filter.all');
+    deptFilter.options[2].text = t('dept.ac');
+  }
+  // Page titles
+  const titles = {
+    dashboard: [t('dash.title'), t('dash.sub')],
+    inventory: [t('inv.title'), t('inv.sub')],
+    maintenance: [t('maint.title'), t('maint.sub')],
+    transfer: [t('trans.title'), t('trans.sub')],
+    software: [t('soft.title'), t('soft.sub')],
+    settings: [t('set.title'), t('set.sub')],
+  };
+  if (titles[currentPage]) {
+    document.getElementById('page-title').textContent = titles[currentPage][0];
+    document.getElementById('page-sub').textContent = titles[currentPage][1];
+  }
+  // Login screen
+  document.querySelector('#login-screen .sys') && (document.querySelector('#login-screen .sys').textContent = t('login.title'));
+  document.querySelector('#login-screen .org') && (document.querySelector('#login-screen .org').textContent = '');
+  // Sync status current text update
+  const syncEl = document.getElementById('sync-status');
+  if (syncEl && syncEl.textContent.includes('Local')) setSyncStatus(t('sync.local'), 'var(--text2)');
+}
+
+
+// ==============================================================
 // SEED DATA
 // ==============================================================
 let inventory = [
@@ -1801,468 +2264,6 @@ function showToast(msg, type='success') {
   t.textContent=(type==='success'?'✅ ':'❌ ')+msg;
   t.className=`toast ${type} show`;
   setTimeout(()=>t.classList.remove('show'),3500);
-}
-
-// ==============================================================
-// LANGUAGE / TRANSLATION SYSTEM
-// ==============================================================
-let currentLang = localStorage.getItem('afs_lang') || 'en';
-
-const TRANSLATIONS = {
-  en: {
-    // Sidebar
-    'nav.dashboard': 'Dashboard', 'nav.records': 'Records', 'nav.inventory': 'Inventory',
-    'nav.maintenance': 'Maintenance Log', 'nav.transfer': 'Item Transfer',
-    'nav.resources': 'Resources', 'nav.software': 'Software Library',
-    'nav.account': 'Account', 'nav.settings': 'Settings', 'nav.logout': 'Logout',
-    // Topbar
-    'dept.all': 'All Departments', 'dept.ac': 'Air Conditioner', 'dept.elec': 'Electrical', 'dept.civil': 'Civil',
-    'btn.push': '⬆️ Push', 'btn.sync': '🔄 Sync', 'btn.export': '📥 Export', 'btn.add': '+ Add Record',
-    // Dashboard
-    'dash.title': 'Dashboard', 'dash.sub': 'Overview of AFS IT assets and maintenance',
-    'dash.total': 'Total Devices', 'dash.total.sub': 'Across both branches',
-    'dash.operational': 'Operational', 'dash.operational.sub': 'Status: OK',
-    'dash.attention': 'Need Attention', 'dash.attention.sub': 'Repair / Check needed',
-    'dash.openwo': 'Open Work Orders', 'dash.openwo.sub': 'Pending / In Progress',
-    'dash.status': 'Device Status', 'dash.location': 'By Location',
-    'dash.types': 'Device Types', 'dash.recent': 'Recent Maintenance',
-    'dash.warranty': '⚠️ Warranty Alerts', 'dash.nodata': t('dash.nodata'),
-    'dash.nojobs': t('dash.nojobs'),
-    // Inventory
-    'inv.title': 'Inventory', 'inv.sub': 'All IT assets across both branches',
-    'inv.search': '🔍 Search...', 'inv.all.status': 'All Status',
-    'inv.all.warranty': 'All Warranty', 'inv.expiring': 'Expiring Soon', 'inv.expired': 'Expired',
-    'inv.col.no': '#', 'inv.col.dept': 'Dept', 'inv.col.code': 'Code', 'inv.col.item': 'Item',
-    'inv.col.owner': 'Assigned To', 'inv.col.location': 'Location',
-    'inv.col.d1': 'Detail 1', 'inv.col.d2': 'Detail 2',
-    'inv.col.warranty': 'Warranty', 'inv.col.status': 'Status',
-    'inv.col.remark': 'Remark', 'inv.col.actions': 'Actions',
-    'inv.empty': t('inv.empty'),
-    // Maintenance
-    'maint.title': 'Maintenance Log', 'maint.sub': 'Work orders and maintenance history',
-    'maint.search': '🔍 Search WO, device...', 'maint.all.status': 'All Status',
-    'maint.col.dept': 'Dept', 'maint.col.wo': 'Work Order', 'maint.col.date': 'Date',
-    'maint.col.device': 'Device', 'maint.col.issue': 'Issue', 'maint.col.findings': 'Findings',
-    'maint.col.rec': 'Recommendation', 'maint.col.status': 'Status',
-    'maint.col.completed': 'Completed', 'maint.col.photos': 'Photos', 'maint.col.actions': 'Actions',
-    'maint.empty': t('maint.empty'),
-    // Transfer
-    'trans.title': 'Item Transfer', 'trans.sub': 'Track item movements between locations',
-    'trans.search': '🔍 Search code, location...',
-    'trans.col.no': '#', 'trans.col.dept': 'Dept', 'trans.col.date': 'Date',
-    'trans.col.code': 'Item Code', 'trans.col.from': 'From', 'trans.col.to': 'To',
-    'trans.col.person': 'Person', 'trans.col.reason': 'Reason',
-    'trans.col.auth': 'Auth By', 'trans.col.remark': 'Remark', 'trans.col.actions': 'Actions',
-    'trans.empty': t('maint.empty'),
-    // Software
-    'soft.title': 'Software Library', 'soft.sub': 'Installers, licenses and download links',
-    'soft.search': '🔍 Search software...', 'soft.all.cat': 'All Categories',
-    'soft.col.name': 'Software', 'soft.col.cat': 'Category', 'soft.col.ver': 'Version',
-    'soft.col.key': 'License Key', 'soft.col.source': 'Source', 'soft.col.notes': 'Notes',
-    'soft.col.dl': 'Download', 'soft.col.actions': 'Actions', 'soft.empty': t('soft.empty'),
-    'soft.get': '⬇️ Get', 'soft.hidden': '•••• hidden',
-    // Settings
-    'set.title': 'Settings', 'set.sub': 'Connection and account settings',
-    'set.sheets': '🔗 Google Sheets Connection', 'set.url': 'Apps Script URL',
-    'set.key': 'Secret Key', 'set.save.conn': 'Save Connection',
-    'set.note': 'These are saved in your browser only — not visible in source code.',
-    'set.password': '👤 Change My Password', 'set.cur.pass': 'Current Password',
-    'set.new.pass': 'New Password', 'set.conf.pass': 'Confirm New Password',
-    'set.update.pass': 'Update Password',
-    'set.data': '📊 Data Management', 'set.push.all': '⬆️ Push All Data to Sheets',
-    'set.pull': '🔄 Pull Data from Sheets',
-    'set.data.note': 'Use "Push" once after initial setup. Use "Sync" to refresh data on any device.',
-    // Login
-    'login.title': 'AFS IT System', 'login.sub': 'Authorized personnel only',
-    'login.username': 'Username', 'login.password': 'Password',
-    'login.btn': 'Sign In', 'login.checking': 'Checking credentials...',
-    'login.error': 'Incorrect username or password',
-    'login.fill': 'Please enter username and password',
-    'login.no.sheets': 'Google Sheets not connected. Go to Settings after setup.',
-    'login.no.reach': 'Cannot reach server. Check your connection.',
-    // Modals — Inventory
-    'inv.modal.add': 'Add Inventory Item', 'inv.modal.edit': 'Edit Inventory Item',
-    'inv.form.dept': 'Department *', 'inv.form.code': 'Item Code *',
-    'inv.form.type': 'Item Type *', 'inv.form.owner': 'Assigned To / Owner',
-    'inv.form.location': 'Location *', 'inv.form.warranty': 'Warranty Expiry',
-    'inv.form.status': 'Status *', 'inv.form.remark': 'Remark',
-    // Modals — Maintenance
-    'maint.modal.add': 'Add Work Order', 'maint.modal.edit': 'Edit Work Order',
-    'maint.form.dept': 'Department *', 'maint.form.wo': 'Work Order No *',
-    'maint.form.date': 'Date Checked *', 'maint.form.status': 'Status *',
-    'maint.form.device': 'Device Code *', 'maint.form.desc': 'Device Description',
-    'maint.form.issue': 'Issue / Problem *', 'maint.form.findings': 'Findings',
-    'maint.form.rec': 'Recommendation / Action Taken', 'maint.form.complete': 'Date Completed',
-    'maint.form.photos': '📷 Photos', 'maint.form.before': 'Before Photo',
-    'maint.form.after': 'After Photo', 'maint.form.click': '📷 Click to upload',
-    'maint.form.before.sub': 'Photo before maintenance', 'maint.form.after.sub': 'Photo after maintenance',
-    'maint.form.uploading': 'Uploading...',
-    // Modals — Transfer
-    'trans.modal.add': 'Add Transfer Record', 'trans.modal.edit': 'Edit Transfer Record',
-    'trans.form.dept': 'Department *', 'trans.form.date': 'Transfer Date *',
-    'trans.form.code': 'Item Code *', 'trans.form.from': 'Transfer From *',
-    'trans.form.to': 'Transfer To *', 'trans.form.person': 'Person in Charge',
-    'trans.form.auth': 'Authorized By', 'trans.form.reason': 'Reason / Purpose',
-    'trans.form.remark': 'Remark',
-    // Modals — Software
-    'soft.modal.add': 'Add Software', 'soft.modal.edit': 'Edit Software',
-    'soft.form.name': 'Software Name *', 'soft.form.cat': 'Category *',
-    'soft.form.ver': 'Version', 'soft.form.key': 'License Key',
-    'soft.form.source': 'Source *', 'soft.form.link': 'Download Link *',
-    'soft.form.notes': 'Notes',
-    // Buttons & common
-    'btn.cancel': 'Cancel', 'btn.save': 'Save', 'btn.save.item': 'Save Item',
-    'btn.save.wo': 'Save Work Order', 'btn.save.transfer': 'Save Transfer',
-    'btn.save.soft': 'Save Software', 'btn.delete': 'Delete', 'btn.edit': '✏️', 'btn.trash': '🗑️',
-    'confirm.delete.title': 'Confirm Delete',
-    'confirm.delete.msg': t('confirm.delete.msg'),
-    // Toast messages
-    'toast.item.added': 'Item added', 'toast.item.updated': 'Item updated',
-    'toast.wo.added': 'Work order added', 'toast.wo.updated': 'Work order updated',
-    'toast.trans.added': 'Transfer added', 'toast.trans.updated': 'Transfer updated',
-    'toast.soft.added': 'Software added', 'toast.soft.updated': 'Software updated',
-    'toast.deleted': 'Record deleted', 'toast.settings.saved': 'Settings saved to browser',
-    'toast.pass.updated': 'Password updated successfully', 'toast.pass.mismatch': 'New passwords do not match',
-    'toast.pass.wrong': 'Current password is incorrect', 'toast.pass.fill': 'Fill in all fields',
-    'toast.synced': 'Data synced from Google Sheets', 'toast.sync.fail': 'Could not reach Google Sheets',
-    'toast.pushed': 'All data pushed to Google Sheets', 'toast.push.fail': 'Could not save to Sheets',
-    'toast.photo.ok': 'Photo uploaded successfully', 'toast.photo.fail': t('toast.photo.fail'),
-    'toast.photo.local': 'Photo loaded locally (connect Sheets to save permanently)',
-    'toast.need.key': 'Go to Settings and enter your Sheets key first',
-    'toast.need.setup': 'Set Sheets key in Settings first',
-    'toast.code.required': 'Item code is required', 'toast.wo.required': 'Work Order No and Device are required',
-    'toast.trans.required': 'Code, From and To are required', 'toast.soft.required': 'Name and link are required',
-    // Pagination
-    'page.showing': 'Showing', 'page.of': 'of',
-    // Warranty display
-    'warranty.expired': '⛔ Expired', 'warranty.left': 'd left',
-    // Sync status
-    'sync.local': 'Local', 'sync.syncing': 'Syncing...', 'sync.synced': 'Synced',
-    'sync.saving': 'Saving...', 'sync.saved': 'Saved', 'sync.failed': 'Save failed',
-    'sync.fail.sync': 'Sync failed', 'sync.ready': 'Ready',
-    // Photo viewer
-    'photo.close': '✕ Close',
-    // Dept filter
-    'dept.filter.all': 'All Departments',
-  },
-
-  ms: {
-    'nav.dashboard': 'Papan Pemuka', 'nav.records': 'Rekod', 'nav.inventory': 'Inventori',
-    'nav.maintenance': 'Log Penyelenggaraan', 'nav.transfer': 'Pindahan Item',
-    'nav.resources': 'Sumber', 'nav.software': 'Perpustakaan Perisian',
-    'nav.account': 'Akaun', 'nav.settings': 'Tetapan', 'nav.logout': 'Log Keluar',
-    'dept.all': 'Semua Jabatan', 'dept.ac': 'Penyaman Udara', 'dept.elec': 'Elektrikal', 'dept.civil': 'Sivil',
-    'btn.push': '⬆️ Hantar', 'btn.sync': '🔄 Segerak', 'btn.export': '📥 Eksport', 'btn.add': '+ Tambah Rekod',
-    'dash.title': 'Papan Pemuka', 'dash.sub': 'Gambaran keseluruhan aset IT dan penyelenggaraan AFS',
-    'dash.total': 'Jumlah Peranti', 'dash.total.sub': 'Merentasi kedua-dua cawangan',
-    'dash.operational': 'Beroperasi', 'dash.operational.sub': 'Status: OK',
-    'dash.attention': 'Perlu Perhatian', 'dash.attention.sub': 'Perlu Baiki / Semak',
-    'dash.openwo': 'Pesanan Kerja Terbuka', 'dash.openwo.sub': 'Belum Selesai / Dalam Proses',
-    'dash.status': 'Status Peranti', 'dash.location': 'Mengikut Lokasi',
-    'dash.types': 'Jenis Peranti', 'dash.recent': 'Penyelenggaraan Terkini',
-    'dash.warranty': '⚠️ Amaran Waranti', 'dash.nodata': 'Tiada data',
-    'dash.nojobs': 'Tiada kerja terkini',
-    'inv.title': 'Inventori', 'inv.sub': 'Semua aset IT merentasi kedua-dua cawangan',
-    'inv.search': '🔍 Cari...', 'inv.all.status': 'Semua Status',
-    'inv.all.warranty': 'Semua Waranti', 'inv.expiring': 'Hampir Tamat', 'inv.expired': 'Tamat Tempoh',
-    'inv.col.no': '#', 'inv.col.dept': 'Jabatan', 'inv.col.code': 'Kod', 'inv.col.item': 'Item',
-    'inv.col.owner': 'Ditetapkan Kepada', 'inv.col.location': 'Lokasi',
-    'inv.col.d1': 'Butiran 1', 'inv.col.d2': 'Butiran 2',
-    'inv.col.warranty': 'Waranti', 'inv.col.status': 'Status',
-    'inv.col.remark': 'Catatan', 'inv.col.actions': 'Tindakan',
-    'inv.empty': 'Tiada item dijumpai',
-    'maint.title': 'Log Penyelenggaraan', 'maint.sub': 'Pesanan kerja dan sejarah penyelenggaraan',
-    'maint.search': '🔍 Cari PK, peranti...', 'maint.all.status': 'Semua Status',
-    'maint.col.dept': 'Jabatan', 'maint.col.wo': 'Pesanan Kerja', 'maint.col.date': 'Tarikh',
-    'maint.col.device': 'Peranti', 'maint.col.issue': 'Masalah', 'maint.col.findings': 'Penemuan',
-    'maint.col.rec': 'Cadangan', 'maint.col.status': 'Status',
-    'maint.col.completed': 'Selesai', 'maint.col.photos': 'Gambar', 'maint.col.actions': 'Tindakan',
-    'maint.empty': 'Tiada rekod dijumpai',
-    'trans.title': 'Pindahan Item', 'trans.sub': 'Jejak pergerakan item antara lokasi',
-    'trans.search': '🔍 Cari kod, lokasi...',
-    'trans.col.no': '#', 'trans.col.dept': 'Jabatan', 'trans.col.date': 'Tarikh',
-    'trans.col.code': 'Kod Item', 'trans.col.from': 'Dari', 'trans.col.to': 'Ke',
-    'trans.col.person': 'Petugas', 'trans.col.reason': 'Sebab',
-    'trans.col.auth': 'Diluluskan Oleh', 'trans.col.remark': 'Catatan', 'trans.col.actions': 'Tindakan',
-    'trans.empty': 'Tiada rekod dijumpai',
-    'soft.title': 'Perpustakaan Perisian', 'soft.sub': 'Pemasang, lesen dan pautan muat turun',
-    'soft.search': '🔍 Cari perisian...', 'soft.all.cat': 'Semua Kategori',
-    'soft.col.name': 'Perisian', 'soft.col.cat': 'Kategori', 'soft.col.ver': 'Versi',
-    'soft.col.key': 'Kunci Lesen', 'soft.col.source': 'Sumber', 'soft.col.notes': 'Nota',
-    'soft.col.dl': 'Muat Turun', 'soft.col.actions': 'Tindakan', 'soft.empty': 'Tiada perisian dijumpai',
-    'soft.get': '⬇️ Dapatkan', 'soft.hidden': '•••• tersembunyi',
-    'set.title': 'Tetapan', 'set.sub': 'Tetapan sambungan dan akaun',
-    'set.sheets': '🔗 Sambungan Google Sheets', 'set.url': 'URL Skrip Aplikasi',
-    'set.key': 'Kunci Rahsia', 'set.save.conn': 'Simpan Sambungan',
-    'set.note': 'Disimpan dalam pelayar anda sahaja — tidak kelihatan dalam kod sumber.',
-    'set.password': '👤 Tukar Kata Laluan', 'set.cur.pass': 'Kata Laluan Semasa',
-    'set.new.pass': 'Kata Laluan Baru', 'set.conf.pass': 'Sahkan Kata Laluan Baru',
-    'set.update.pass': 'Kemaskini Kata Laluan',
-    'set.data': '📊 Pengurusan Data', 'set.push.all': '⬆️ Hantar Semua Data ke Sheets',
-    'set.pull': '🔄 Ambil Data dari Sheets',
-    'set.data.note': 'Guna "Hantar" sekali selepas persediaan awal. Guna "Segerak" untuk muat semula data di mana-mana peranti.',
-    'login.title': 'Sistem IT AFS', 'login.sub': 'Kakitangan yang diberi kuasa sahaja',
-    'login.username': 'Nama Pengguna', 'login.password': 'Kata Laluan',
-    'login.btn': 'Log Masuk', 'login.checking': 'Menyemak kelayakan...',
-    'login.error': 'Nama pengguna atau kata laluan salah',
-    'login.fill': 'Sila masukkan nama pengguna dan kata laluan',
-    'login.no.sheets': 'Google Sheets tidak disambung. Pergi ke Tetapan selepas persediaan.',
-    'login.no.reach': 'Tidak dapat mencapai pelayan. Semak sambungan anda.',
-    'inv.modal.add': 'Tambah Item Inventori', 'inv.modal.edit': 'Edit Item Inventori',
-    'inv.form.dept': 'Jabatan *', 'inv.form.code': 'Kod Item *',
-    'inv.form.type': 'Jenis Item *', 'inv.form.owner': 'Ditetapkan Kepada / Pemilik',
-    'inv.form.location': 'Lokasi *', 'inv.form.warranty': 'Tarikh Tamat Waranti',
-    'inv.form.status': 'Status *', 'inv.form.remark': 'Catatan',
-    'maint.modal.add': 'Tambah Pesanan Kerja', 'maint.modal.edit': 'Edit Pesanan Kerja',
-    'maint.form.dept': 'Jabatan *', 'maint.form.wo': 'No. Pesanan Kerja *',
-    'maint.form.date': 'Tarikh Diperiksa *', 'maint.form.status': 'Status *',
-    'maint.form.device': 'Kod Peranti *', 'maint.form.desc': 'Penerangan Peranti',
-    'maint.form.issue': 'Masalah / Isu *', 'maint.form.findings': 'Penemuan',
-    'maint.form.rec': 'Cadangan / Tindakan Diambil', 'maint.form.complete': 'Tarikh Selesai',
-    'maint.form.photos': '📷 Gambar', 'maint.form.before': 'Gambar Sebelum',
-    'maint.form.after': 'Gambar Selepas', 'maint.form.click': '📷 Klik untuk muat naik',
-    'maint.form.before.sub': 'Gambar sebelum penyelenggaraan', 'maint.form.after.sub': 'Gambar selepas penyelenggaraan',
-    'maint.form.uploading': 'Memuat naik...',
-    'trans.modal.add': 'Tambah Rekod Pindahan', 'trans.modal.edit': 'Edit Rekod Pindahan',
-    'trans.form.dept': 'Jabatan *', 'trans.form.date': 'Tarikh Pindahan *',
-    'trans.form.code': 'Kod Item *', 'trans.form.from': 'Pindahan Dari *',
-    'trans.form.to': 'Pindahan Ke *', 'trans.form.person': 'Petugas',
-    'trans.form.auth': 'Diluluskan Oleh', 'trans.form.reason': 'Sebab / Tujuan',
-    'trans.form.remark': 'Catatan',
-    'soft.modal.add': 'Tambah Perisian', 'soft.modal.edit': 'Edit Perisian',
-    'soft.form.name': 'Nama Perisian *', 'soft.form.cat': 'Kategori *',
-    'soft.form.ver': 'Versi', 'soft.form.key': 'Kunci Lesen',
-    'soft.form.source': 'Sumber *', 'soft.form.link': 'Pautan Muat Turun *',
-    'soft.form.notes': 'Nota',
-    'btn.cancel': 'Batal', 'btn.save': 'Simpan', 'btn.save.item': 'Simpan Item',
-    'btn.save.wo': 'Simpan Pesanan Kerja', 'btn.save.transfer': 'Simpan Pindahan',
-    'btn.save.soft': 'Simpan Perisian', 'btn.delete': 'Padam', 'btn.edit': '✏️', 'btn.trash': '🗑️',
-    'confirm.delete.title': 'Sahkan Pemadaman',
-    'confirm.delete.msg': 'Adakah anda pasti untuk memadam rekod ini? Tindakan ini tidak boleh dibatalkan.',
-    'toast.item.added': 'Item ditambah', 'toast.item.updated': 'Item dikemaskini',
-    'toast.wo.added': 'Pesanan kerja ditambah', 'toast.wo.updated': 'Pesanan kerja dikemaskini',
-    'toast.trans.added': 'Pindahan ditambah', 'toast.trans.updated': 'Pindahan dikemaskini',
-    'toast.soft.added': 'Perisian ditambah', 'toast.soft.updated': 'Perisian dikemaskini',
-    'toast.deleted': 'Rekod dipadam', 'toast.settings.saved': 'Tetapan disimpan dalam pelayar',
-    'toast.pass.updated': 'Kata laluan berjaya dikemaskini', 'toast.pass.mismatch': 'Kata laluan baru tidak sepadan',
-    'toast.pass.wrong': 'Kata laluan semasa tidak betul', 'toast.pass.fill': 'Isi semua medan',
-    'toast.synced': 'Data disegerakkan dari Google Sheets', 'toast.sync.fail': 'Tidak dapat mencapai Google Sheets',
-    'toast.pushed': 'Semua data dihantar ke Google Sheets', 'toast.push.fail': 'Tidak dapat simpan ke Sheets',
-    'toast.photo.ok': 'Gambar berjaya dimuat naik', 'toast.photo.fail': 'Muat naik gagal',
-    'toast.photo.local': 'Gambar dimuatkan secara tempatan (sambung Sheets untuk simpan secara kekal)',
-    'toast.need.key': 'Pergi ke Tetapan dan masukkan kunci Sheets anda dahulu',
-    'toast.need.setup': 'Tetapkan kunci Sheets dalam Tetapan dahulu',
-    'toast.code.required': 'Kod item diperlukan', 'toast.wo.required': 'No. Pesanan Kerja dan Peranti diperlukan',
-    'toast.trans.required': 'Kod, Dari dan Ke diperlukan', 'toast.soft.required': 'Nama dan pautan diperlukan',
-    'page.showing': 'Menunjukkan', 'page.of': 'daripada',
-    'warranty.expired': '⛔ Tamat Tempoh', 'warranty.left': 'hari lagi',
-    'sync.local': 'Tempatan', 'sync.syncing': 'Menyegerak...', 'sync.synced': 'Disegerak',
-    'sync.saving': 'Menyimpan...', 'sync.saved': 'Disimpan', 'sync.failed': 'Simpan gagal',
-    'sync.fail.sync': 'Segerak gagal', 'sync.ready': 'Sedia',
-    'photo.close': '✕ Tutup', 'dept.filter.all': 'Semua Jabatan',
-  },
-
-  id: {
-    'nav.dashboard': 'Dasbor', 'nav.records': 'Rekaman', 'nav.inventory': 'Inventaris',
-    'nav.maintenance': 'Log Pemeliharaan', 'nav.transfer': 'Transfer Item',
-    'nav.resources': 'Sumber Daya', 'nav.software': 'Perpustakaan Perangkat Lunak',
-    'nav.account': 'Akun', 'nav.settings': 'Pengaturan', 'nav.logout': 'Keluar',
-    'dept.all': 'Semua Departemen', 'dept.ac': 'AC / Pendingin Udara', 'dept.elec': 'Elektrikal', 'dept.civil': 'Sipil',
-    'btn.push': '⬆️ Kirim', 'btn.sync': '🔄 Sinkronkan', 'btn.export': '📥 Ekspor', 'btn.add': '+ Tambah Rekaman',
-    'dash.title': 'Dasbor', 'dash.sub': 'Gambaran umum aset IT dan pemeliharaan AFS',
-    'dash.total': 'Total Perangkat', 'dash.total.sub': 'Di seluruh cabang',
-    'dash.operational': 'Beroperasi', 'dash.operational.sub': 'Status: OK',
-    'dash.attention': 'Perlu Perhatian', 'dash.attention.sub': 'Perlu Diperbaiki / Diperiksa',
-    'dash.openwo': 'Perintah Kerja Terbuka', 'dash.openwo.sub': 'Tertunda / Sedang Berjalan',
-    'dash.status': 'Status Perangkat', 'dash.location': 'Berdasarkan Lokasi',
-    'dash.types': 'Jenis Perangkat', 'dash.recent': 'Pemeliharaan Terbaru',
-    'dash.warranty': '⚠️ Peringatan Garansi', 'dash.nodata': 'Tidak ada data',
-    'dash.nojobs': 'Tidak ada pekerjaan terbaru',
-    'inv.title': 'Inventaris', 'inv.sub': 'Semua aset IT di seluruh cabang',
-    'inv.search': '🔍 Cari...', 'inv.all.status': 'Semua Status',
-    'inv.all.warranty': 'Semua Garansi', 'inv.expiring': 'Segera Berakhir', 'inv.expired': 'Kadaluarsa',
-    'inv.col.no': '#', 'inv.col.dept': 'Dept', 'inv.col.code': 'Kode', 'inv.col.item': 'Item',
-    'inv.col.owner': 'Ditugaskan Ke', 'inv.col.location': 'Lokasi',
-    'inv.col.d1': 'Detail 1', 'inv.col.d2': 'Detail 2',
-    'inv.col.warranty': 'Garansi', 'inv.col.status': 'Status',
-    'inv.col.remark': 'Catatan', 'inv.col.actions': 'Aksi',
-    'inv.empty': 'Tidak ada item ditemukan',
-    'maint.title': 'Log Pemeliharaan', 'maint.sub': 'Perintah kerja dan riwayat pemeliharaan',
-    'maint.search': '🔍 Cari PK, perangkat...', 'maint.all.status': 'Semua Status',
-    'maint.col.dept': 'Dept', 'maint.col.wo': 'Perintah Kerja', 'maint.col.date': 'Tanggal',
-    'maint.col.device': 'Perangkat', 'maint.col.issue': 'Masalah', 'maint.col.findings': 'Temuan',
-    'maint.col.rec': 'Rekomendasi', 'maint.col.status': 'Status',
-    'maint.col.completed': 'Selesai', 'maint.col.photos': 'Foto', 'maint.col.actions': 'Aksi',
-    'maint.empty': 'Tidak ada rekaman ditemukan',
-    'trans.title': 'Transfer Item', 'trans.sub': 'Lacak pergerakan item antar lokasi',
-    'trans.search': '🔍 Cari kode, lokasi...',
-    'trans.col.no': '#', 'trans.col.dept': 'Dept', 'trans.col.date': 'Tanggal',
-    'trans.col.code': 'Kode Item', 'trans.col.from': 'Dari', 'trans.col.to': 'Ke',
-    'trans.col.person': 'Penanggung Jawab', 'trans.col.reason': 'Alasan',
-    'trans.col.auth': 'Disetujui Oleh', 'trans.col.remark': 'Catatan', 'trans.col.actions': 'Aksi',
-    'trans.empty': 'Tidak ada rekaman ditemukan',
-    'soft.title': 'Perpustakaan Perangkat Lunak', 'soft.sub': 'Installer, lisensi, dan tautan unduhan',
-    'soft.search': '🔍 Cari perangkat lunak...', 'soft.all.cat': 'Semua Kategori',
-    'soft.col.name': 'Perangkat Lunak', 'soft.col.cat': 'Kategori', 'soft.col.ver': 'Versi',
-    'soft.col.key': 'Kunci Lisensi', 'soft.col.source': 'Sumber', 'soft.col.notes': 'Catatan',
-    'soft.col.dl': 'Unduh', 'soft.col.actions': 'Aksi', 'soft.empty': 'Tidak ada perangkat lunak ditemukan',
-    'soft.get': '⬇️ Dapatkan', 'soft.hidden': '•••• tersembunyi',
-    'set.title': 'Pengaturan', 'set.sub': 'Pengaturan koneksi dan akun',
-    'set.sheets': '🔗 Koneksi Google Sheets', 'set.url': 'URL Skrip Aplikasi',
-    'set.key': 'Kunci Rahasia', 'set.save.conn': 'Simpan Koneksi',
-    'set.note': 'Disimpan di browser Anda saja — tidak terlihat di kode sumber.',
-    'set.password': '👤 Ganti Kata Sandi', 'set.cur.pass': 'Kata Sandi Saat Ini',
-    'set.new.pass': 'Kata Sandi Baru', 'set.conf.pass': 'Konfirmasi Kata Sandi Baru',
-    'set.update.pass': 'Perbarui Kata Sandi',
-    'set.data': '📊 Manajemen Data', 'set.push.all': '⬆️ Kirim Semua Data ke Sheets',
-    'set.pull': '🔄 Ambil Data dari Sheets',
-    'set.data.note': 'Gunakan "Kirim" sekali setelah pengaturan awal. Gunakan "Sinkronkan" untuk menyegarkan data di perangkat mana pun.',
-    'login.title': 'Sistem IT AFS', 'login.sub': 'Hanya personel yang berwenang',
-    'login.username': 'Nama Pengguna', 'login.password': 'Kata Sandi',
-    'login.btn': 'Masuk', 'login.checking': 'Memeriksa kredensial...',
-    'login.error': 'Nama pengguna atau kata sandi salah',
-    'login.fill': 'Silakan masukkan nama pengguna dan kata sandi',
-    'login.no.sheets': 'Google Sheets belum terhubung. Pergi ke Pengaturan setelah penyiapan.',
-    'login.no.reach': 'Tidak dapat menjangkau server. Periksa koneksi Anda.',
-    'inv.modal.add': 'Tambah Item Inventaris', 'inv.modal.edit': 'Edit Item Inventaris',
-    'inv.form.dept': 'Departemen *', 'inv.form.code': 'Kode Item *',
-    'inv.form.type': 'Jenis Item *', 'inv.form.owner': 'Ditugaskan Ke / Pemilik',
-    'inv.form.location': 'Lokasi *', 'inv.form.warranty': 'Tanggal Berakhir Garansi',
-    'inv.form.status': 'Status *', 'inv.form.remark': 'Catatan',
-    'maint.modal.add': 'Tambah Perintah Kerja', 'maint.modal.edit': 'Edit Perintah Kerja',
-    'maint.form.dept': 'Departemen *', 'maint.form.wo': 'No. Perintah Kerja *',
-    'maint.form.date': 'Tanggal Diperiksa *', 'maint.form.status': 'Status *',
-    'maint.form.device': 'Kode Perangkat *', 'maint.form.desc': 'Deskripsi Perangkat',
-    'maint.form.issue': 'Masalah / Isu *', 'maint.form.findings': 'Temuan',
-    'maint.form.rec': 'Rekomendasi / Tindakan Diambil', 'maint.form.complete': 'Tanggal Selesai',
-    'maint.form.photos': '📷 Foto', 'maint.form.before': 'Foto Sebelum',
-    'maint.form.after': 'Foto Sesudah', 'maint.form.click': '📷 Klik untuk unggah',
-    'maint.form.before.sub': 'Foto sebelum pemeliharaan', 'maint.form.after.sub': 'Foto setelah pemeliharaan',
-    'maint.form.uploading': 'Mengunggah...',
-    'trans.modal.add': 'Tambah Rekaman Transfer', 'trans.modal.edit': 'Edit Rekaman Transfer',
-    'trans.form.dept': 'Departemen *', 'trans.form.date': 'Tanggal Transfer *',
-    'trans.form.code': 'Kode Item *', 'trans.form.from': 'Transfer Dari *',
-    'trans.form.to': 'Transfer Ke *', 'trans.form.person': 'Penanggung Jawab',
-    'trans.form.auth': 'Disetujui Oleh', 'trans.form.reason': 'Alasan / Tujuan',
-    'trans.form.remark': 'Catatan',
-    'soft.modal.add': 'Tambah Perangkat Lunak', 'soft.modal.edit': 'Edit Perangkat Lunak',
-    'soft.form.name': 'Nama Perangkat Lunak *', 'soft.form.cat': 'Kategori *',
-    'soft.form.ver': 'Versi', 'soft.form.key': 'Kunci Lisensi',
-    'soft.form.source': 'Sumber *', 'soft.form.link': 'Tautan Unduhan *',
-    'soft.form.notes': 'Catatan',
-    'btn.cancel': 'Batal', 'btn.save': 'Simpan', 'btn.save.item': 'Simpan Item',
-    'btn.save.wo': 'Simpan Perintah Kerja', 'btn.save.transfer': 'Simpan Transfer',
-    'btn.save.soft': 'Simpan Perangkat Lunak', 'btn.delete': 'Hapus', 'btn.edit': '✏️', 'btn.trash': '🗑️',
-    'confirm.delete.title': 'Konfirmasi Penghapusan',
-    'confirm.delete.msg': 'Apakah Anda yakin ingin menghapus rekaman ini? Tindakan ini tidak dapat dibatalkan.',
-    'toast.item.added': 'Item ditambahkan', 'toast.item.updated': 'Item diperbarui',
-    'toast.wo.added': 'Perintah kerja ditambahkan', 'toast.wo.updated': 'Perintah kerja diperbarui',
-    'toast.trans.added': 'Transfer ditambahkan', 'toast.trans.updated': 'Transfer diperbarui',
-    'toast.soft.added': 'Perangkat lunak ditambahkan', 'toast.soft.updated': 'Perangkat lunak diperbarui',
-    'toast.deleted': 'Rekaman dihapus', 'toast.settings.saved': 'Pengaturan disimpan di browser',
-    'toast.pass.updated': 'Kata sandi berhasil diperbarui', 'toast.pass.mismatch': 'Kata sandi baru tidak cocok',
-    'toast.pass.wrong': 'Kata sandi saat ini salah', 'toast.pass.fill': 'Isi semua kolom',
-    'toast.synced': 'Data disinkronkan dari Google Sheets', 'toast.sync.fail': 'Tidak dapat menjangkau Google Sheets',
-    'toast.pushed': 'Semua data dikirim ke Google Sheets', 'toast.push.fail': 'Tidak dapat menyimpan ke Sheets',
-    'toast.photo.ok': 'Foto berhasil diunggah', 'toast.photo.fail': 'Unggah gagal',
-    'toast.photo.local': 'Foto dimuat secara lokal (hubungkan Sheets untuk menyimpan secara permanen)',
-    'toast.need.key': 'Pergi ke Pengaturan dan masukkan kunci Sheets Anda terlebih dahulu',
-    'toast.need.setup': 'Atur kunci Sheets di Pengaturan terlebih dahulu',
-    'toast.code.required': 'Kode item diperlukan', 'toast.wo.required': 'No. Perintah Kerja dan Perangkat diperlukan',
-    'toast.trans.required': 'Kode, Dari, dan Ke diperlukan', 'toast.soft.required': 'Nama dan tautan diperlukan',
-    'page.showing': 'Menampilkan', 'page.of': 'dari',
-    'warranty.expired': '⛔ Kadaluarsa', 'warranty.left': 'hari lagi',
-    'sync.local': 'Lokal', 'sync.syncing': 'Menyinkronkan...', 'sync.synced': 'Disinkronkan',
-    'sync.saving': 'Menyimpan...', 'sync.saved': 'Disimpan', 'sync.failed': 'Simpan gagal',
-    'sync.fail.sync': 'Sinkronisasi gagal', 'sync.ready': 'Siap',
-    'photo.close': '✕ Tutup', 'dept.filter.all': 'Semua Departemen',
-  }
-};
-
-function t(key) {
-  return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
-         (TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) || key;
-}
-
-function setLanguage(lang) {
-  currentLang = lang;
-  localStorage.setItem('afs_lang', lang);
-  document.getElementById('lang-switcher').value = lang;
-  applyTranslations();
-  // Re-render current page to apply translations to dynamic content
-  if (currentPage === 'dashboard') renderDashboard();
-  else if (currentPage === 'inventory') renderInventory();
-  else if (currentPage === 'maintenance') renderMaintenance();
-  else if (currentPage === 'transfer') renderTransfer();
-  else if (currentPage === 'software') renderSoftware();
-  else if (currentPage === 'settings') loadSettings();
-}
-
-function applyTranslations() {
-  // Sidebar nav
-  const navMap = {
-    'dashboard': 'nav.dashboard', 'inventory': 'nav.inventory',
-    'maintenance': 'nav.maintenance', 'transfer': 'nav.transfer',
-    'software': 'nav.software', 'settings': 'nav.settings', 'logout': 'nav.logout'
-  };
-  document.querySelectorAll('.nav-item').forEach(el => {
-    const onclick = el.getAttribute('onclick') || '';
-    const txt = el.textContent.trim().toLowerCase();
-    for (const [page, key] of Object.entries(navMap)) {
-      if (onclick.includes(page) || txt.includes(page)) {
-        const icon = el.querySelector('.icon');
-        const iconHTML = icon ? icon.outerHTML : '';
-        el.innerHTML = iconHTML + ' ' + t(key);
-        if (icon) el.insertBefore(icon, el.firstChild);
-        break;
-      }
-    }
-  });
-  // Nav sections
-  const sections = document.querySelectorAll('.nav-section');
-  const sectionKeys = ['nav.dashboard', 'nav.records', 'nav.resources', 'nav.account'];
-  const sectionTexts = { 'Main': 'nav.dashboard', 'Records': 'nav.records', 'Resources': 'nav.resources', 'Account': 'nav.account' };
-  sections.forEach(el => {
-    const txt = el.textContent.trim();
-    if (txt === 'Main') el.textContent = t('nav.dashboard') === t('nav.dashboard') ? 'Main' : t('nav.dashboard');
-    else if (txt === 'Records' || txt === 'Rekod' || txt === 'Rekaman') el.textContent = t('nav.records');
-    else if (txt === 'Resources' || txt === 'Sumber' || txt === 'Sumber Daya') el.textContent = t('nav.resources');
-    else if (txt === 'Account' || txt === 'Akaun' || txt === 'Akun') el.textContent = t('nav.account');
-  });
-  // Topbar buttons
-  const pushBtn = document.querySelector('button[onclick="initialPushToSheets()"]');
-  if (pushBtn) pushBtn.textContent = t('btn.push');
-  const syncBtn = document.querySelector('button[onclick="syncFromSheets()"]');
-  if (syncBtn) syncBtn.textContent = t('btn.sync');
-  const exportBtn = document.querySelector('button[onclick="exportData()"]');
-  if (exportBtn) exportBtn.textContent = t('btn.export');
-  const addBtn = document.getElementById('add-btn');
-  if (addBtn) addBtn.textContent = t('btn.add');
-  // Dept filter options
-  const deptFilter = document.getElementById('dept-filter');
-  if (deptFilter) {
-    deptFilter.options[0].text = t('dept.filter.all');
-    deptFilter.options[2].text = t('dept.ac');
-  }
-  // Page titles
-  const titles = {
-    dashboard: [t('dash.title'), t('dash.sub')],
-    inventory: [t('inv.title'), t('inv.sub')],
-    maintenance: [t('maint.title'), t('maint.sub')],
-    transfer: [t('trans.title'), t('trans.sub')],
-    software: [t('soft.title'), t('soft.sub')],
-    settings: [t('set.title'), t('set.sub')],
-  };
-  if (titles[currentPage]) {
-    document.getElementById('page-title').textContent = titles[currentPage][0];
-    document.getElementById('page-sub').textContent = titles[currentPage][1];
-  }
-  // Login screen
-  document.querySelector('#login-screen .sys') && (document.querySelector('#login-screen .sys').textContent = t('login.title'));
-  document.querySelector('#login-screen .org') && (document.querySelector('#login-screen .org').textContent = '');
-  // Sync status current text update
-  const syncEl = document.getElementById('sync-status');
-  if (syncEl && syncEl.textContent.includes('Local')) setSyncStatus(t('sync.local'), 'var(--text2)');
 }
 
 // ==============================================================
