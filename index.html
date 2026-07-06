@@ -280,6 +280,10 @@
     <div class="nav-item" onclick="showPage('transfer')">
       <span class="icon">🔄</span> Item Transfer
     </div>
+    <div class="nav-section">Resources</div>
+    <div class="nav-item" onclick="showPage('software')">
+      <span class="icon">💿</span> Software Library
+    </div>
   </nav>
   <div class="sidebar-footer">
     Logged in as <span>Hafiz</span><br>IT Department
@@ -294,6 +298,13 @@
       <div class="topbar-sub" id="page-sub">Overview of AFS IT assets and maintenance</div>
     </div>
     <div class="topbar-right">
+      <select class="filter-select" id="dept-filter" onchange="onDeptFilterChange()" style="font-weight:600">
+        <option value="">All Departments</option>
+        <option value="IT">IT</option>
+        <option value="Air Conditioner">Air Conditioner</option>
+        <option value="Electrical">Electrical</option>
+        <option value="Civil">Civil</option>
+      </select>
       <span id="sync-status" style="font-size:12px;color:var(--text2)">●  Local only</span>
       <button class="btn btn-secondary" onclick="initialPushToSheets()" id="initial-push-btn">⬆️ Push to Sheets (first time)</button>
       <button class="btn btn-secondary" onclick="syncFromSheets()">🔄 Sync</button>
@@ -363,6 +374,13 @@
           <div class="table-title">All Inventory <span id="inv-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
             <input class="search-input" placeholder="🔍  Search item, code, person..." id="inv-search" oninput="renderInventory()">
+            <select class="filter-select" id="inv-filter-dept" onchange="renderInventory()">
+              <option value="">All Departments</option>
+              <option>IT</option>
+              <option>Air Conditioner</option>
+              <option>Electrical</option>
+              <option>Civil</option>
+            </select>
             <select class="filter-select" id="inv-filter-type" onchange="renderInventory()">
               <option value="">All Types</option>
               <option>Dell CPU</option>
@@ -370,6 +388,9 @@
               <option>Acer Monitor</option>
               <option>Laptop</option>
               <option>Printer</option>
+              <option>Air Conditioner Unit</option>
+              <option>Electrical Component</option>
+              <option>Civil / Building Item</option>
             </select>
             <select class="filter-select" id="inv-filter-status" onchange="renderInventory()">
               <option value="">All Status</option>
@@ -384,6 +405,11 @@
               <option>ICT Room</option>
               <option>First Aid</option>
             </select>
+            <select class="filter-select" id="inv-filter-warranty" onchange="renderInventory()">
+              <option value="">All Warranty</option>
+              <option value="expiring">Expiring Soon (30 days)</option>
+              <option value="expired">Expired</option>
+            </select>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -391,13 +417,15 @@
             <thead>
               <tr>
                 <th>No</th>
+                <th>Dept</th>
                 <th>Code</th>
                 <th>Item</th>
                 <th>Owned By</th>
                 <th>Location</th>
-                <th>Processor</th>
-                <th>Storage</th>
-                <th>RAM</th>
+                <th id="inv-th-1">Processor</th>
+                <th id="inv-th-3">Storage</th>
+                <th id="inv-th-4">RAM</th>
+                <th>Warranty</th>
                 <th>Status</th>
                 <th>Remark</th>
                 <th>Actions</th>
@@ -420,6 +448,13 @@
           <div class="table-title">Maintenance Log <span id="maint-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
             <input class="search-input" placeholder="🔍  Search WO, device, issue..." id="maint-search" oninput="renderMaintenance()">
+            <select class="filter-select" id="maint-filter-dept" onchange="renderMaintenance()">
+              <option value="">All Departments</option>
+              <option>IT</option>
+              <option>Air Conditioner</option>
+              <option>Electrical</option>
+              <option>Civil</option>
+            </select>
             <select class="filter-select" id="maint-filter-status" onchange="renderMaintenance()">
               <option value="">All Status</option>
               <option>Completed</option>
@@ -432,6 +467,7 @@
           <table class="data-table">
             <thead>
               <tr>
+                <th>Dept</th>
                 <th>Work Order</th>
                 <th>Date Checked</th>
                 <th>Device Code</th>
@@ -461,6 +497,13 @@
           <div class="table-title">Item Transfer Log <span id="trans-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
             <input class="search-input" placeholder="🔍  Search code, location..." id="trans-search" oninput="renderTransfer()">
+            <select class="filter-select" id="trans-filter-dept" onchange="renderTransfer()">
+              <option value="">All Departments</option>
+              <option>IT</option>
+              <option>Air Conditioner</option>
+              <option>Electrical</option>
+              <option>Civil</option>
+            </select>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -468,6 +511,7 @@
             <thead>
               <tr>
                 <th>No</th>
+                <th>Dept</th>
                 <th>Transfer Date</th>
                 <th>Item Code</th>
                 <th>From</th>
@@ -489,6 +533,48 @@
       </div>
     </div>
 
+    <!-- SOFTWARE LIBRARY PAGE -->
+    <div class="page" id="page-software">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Software Library <span id="soft-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+          <div class="table-controls">
+            <input class="search-input" placeholder="🔍  Search software or device code..." id="soft-search" oninput="renderSoftware()">
+            <select class="filter-select" id="soft-filter-category" onchange="renderSoftware()">
+              <option value="">All Categories</option>
+              <option>Operating System</option>
+              <option>Office & Productivity</option>
+              <option>Security</option>
+              <option>Utility</option>
+              <option>Driver</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Software</th>
+                <th>Category</th>
+                <th>Version</th>
+                <th>License Key</th>
+                <th>Source</th>
+                <th>Notes</th>
+                <th>Download</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="soft-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-pagination">
+          <span id="soft-page-info"></span>
+          <div class="pagination-btns" id="soft-pagination"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </main>
 
@@ -504,9 +590,20 @@
       <input type="hidden" id="inv-edit-id">
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">Department *</label>
+          <select class="form-select" id="inv-dept" onchange="onInvDeptChange()">
+            <option>IT</option>
+            <option>Air Conditioner</option>
+            <option>Electrical</option>
+            <option>Civil</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label">Item Code *</label>
           <input class="form-input" id="inv-code" placeholder="e.g. AFS/SA/PC/042">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Item Type *</label>
           <select class="form-select" id="inv-item">
@@ -515,15 +612,18 @@
             <option>Acer Monitor</option>
             <option>Laptop</option>
             <option>Printer</option>
+            <option>Air Conditioner Unit</option>
+            <option>Electrical Component</option>
+            <option>Civil / Building Item</option>
             <option>Other</option>
           </select>
         </div>
-      </div>
-      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Owned By / Assigned To</label>
           <input class="form-input" id="inv-owner" placeholder="e.g. ICT-32 or Staff Name">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Location *</label>
           <select class="form-select" id="inv-location">
@@ -534,24 +634,28 @@
             <option>Branch 2</option>
           </select>
         </div>
+        <div class="form-group">
+          <label class="form-label">Warranty Expiry</label>
+          <input class="form-input" type="date" id="inv-warranty">
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Processor</label>
+          <label class="form-label" id="inv-label-1">Processor</label>
           <input class="form-input" id="inv-desc1" placeholder="e.g. Intel Core i5-14400">
         </div>
         <div class="form-group">
-          <label class="form-label">Model</label>
+          <label class="form-label" id="inv-label-2">Model</label>
           <input class="form-input" id="inv-desc2" placeholder="e.g. Optiplex 380">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Storage</label>
+          <label class="form-label" id="inv-label-3">Storage</label>
           <input class="form-input" id="inv-desc3" placeholder="e.g. Patriot SSD 256GB">
         </div>
         <div class="form-group">
-          <label class="form-label">RAM</label>
+          <label class="form-label" id="inv-label-4">RAM</label>
           <input class="form-input" id="inv-desc4" placeholder="e.g. 8GB DDR4">
         </div>
       </div>
@@ -590,19 +694,30 @@
       <input type="hidden" id="maint-edit-id">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Work Order No *</label>
-          <input class="form-input" id="maint-wo" placeholder="e.g. CM0049">
+          <label class="form-label">Department *</label>
+          <select class="form-select" id="maint-dept">
+            <option>IT</option>
+            <option>Air Conditioner</option>
+            <option>Electrical</option>
+            <option>Civil</option>
+          </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Date Checked *</label>
-          <input class="form-input" type="date" id="maint-date">
+          <label class="form-label">Work Order No *</label>
+          <input class="form-input" id="maint-wo" placeholder="e.g. CM0049">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">Date Checked *</label>
+          <input class="form-input" type="date" id="maint-date">
+        </div>
+        <div class="form-group">
           <label class="form-label">Device Code *</label>
           <input class="form-input" id="maint-device" placeholder="e.g. AFS/SA/PC/001">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Device Description</label>
           <input class="form-input" id="maint-desc" placeholder="e.g. Dell CPU">
@@ -659,19 +774,30 @@
       <input type="hidden" id="trans-edit-id">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Transfer Date *</label>
-          <input class="form-input" type="date" id="trans-date">
+          <label class="form-label">Department *</label>
+          <select class="form-select" id="trans-dept">
+            <option>IT</option>
+            <option>Air Conditioner</option>
+            <option>Electrical</option>
+            <option>Civil</option>
+          </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Item Code *</label>
-          <input class="form-input" id="trans-code" placeholder="e.g. AFS/SA/PC/001">
+          <label class="form-label">Transfer Date *</label>
+          <input class="form-input" type="date" id="trans-date">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">Item Code *</label>
+          <input class="form-input" id="trans-code" placeholder="e.g. AFS/SA/PC/001">
+        </div>
+        <div class="form-group">
           <label class="form-label">Transfer From *</label>
           <input class="form-input" id="trans-from" placeholder="e.g. ICT Room">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Transfer To *</label>
           <input class="form-input" id="trans-to" placeholder="e.g. Admin Office">
@@ -703,6 +829,69 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-transfer')">Cancel</button>
       <button class="btn btn-primary" onclick="saveTransfer()">Save Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Software Modal -->
+<div class="modal-overlay" id="modal-software">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="soft-modal-title">Add Software</h3>
+      <button class="modal-close" onclick="closeModal('modal-software')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="soft-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Software Name *</label>
+          <input class="form-input" id="soft-name" placeholder="e.g. Deep Freeze">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-select" id="soft-category">
+            <option>Operating System</option>
+            <option>Office & Productivity</option>
+            <option>Security</option>
+            <option>Utility</option>
+            <option>Driver</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Version</label>
+          <input class="form-input" id="soft-version" placeholder="e.g. 8.6 / 2019 / 22H2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">License Key</label>
+          <input class="form-input" id="soft-license" placeholder="Leave blank if not applicable">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Source *</label>
+          <select class="form-select" id="soft-source">
+            <option>Google Drive</option>
+            <option>Direct Link (vendor site)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Download Link *</label>
+          <input class="form-input" id="soft-link" placeholder="Paste Google Drive or vendor URL">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="soft-notes" placeholder="Install instructions, which devices use this, etc."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-software')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSoftware()">Save Software</button>
     </div>
   </div>
 </div>
@@ -887,12 +1076,66 @@ let transfers = [
   {id:12, no:12, date:'2026-03-26', code:'AFS/SA/DM/004', from:'Store', to:'ICT-13', pic:'Hafiz', reason:'Build PC for ICT-13', auth:'Hafiz', remark:''},
 ];
 
+let software = [
+  {id:1, name:'Deep Freeze', category:'Utility', version:'8.6', license:'XXXX-XXXX-XXXX', source:'Google Drive', link:'https://drive.google.com/your-folder-link', notes:'Used on all ICT Room PCs to reset on restart. Install after Windows + Office setup.'},
+  {id:2, name:'Microsoft Office', category:'Office & Productivity', version:'2019', license:'XXXX-XXXX-XXXX', source:'Google Drive', link:'https://drive.google.com/your-folder-link', notes:'Standard install for Admin Office PCs.'},
+  {id:3, name:'Malwarebytes', category:'Security', version:'Latest', license:'', source:'Direct Link (vendor site)', link:'https://www.malwarebytes.com/mwb-download', notes:'Free version sufficient for scans.'},
+  {id:4, name:'Windows 10 Pro', category:'Operating System', version:'22H2', license:'XXXX-XXXX-XXXX', source:'Google Drive', link:'https://drive.google.com/your-folder-link', notes:'Use for ICT Room upgrades from Windows 7.'},
+];
+
 // State
 let currentPage = 'dashboard';
-let invPage = 1, maintPage = 1, transPage = 1;
+let invPage = 1, maintPage = 1, transPage = 1, softPage = 1;
 const PER_PAGE = 15;
 let deleteTarget = null;
-let nextInvId = 80, nextMaintId = 50, nextTransId = 13;
+let nextInvId = 80, nextMaintId = 50, nextTransId = 13, nextSoftId = 5;
+let globalDept = ''; // '' = All Departments, otherwise 'IT'/'Air Conditioner'/'Electrical'/'Civil'
+
+// All existing seed data above predates the multi-department feature,
+// so it's tagged IT by default here in one place rather than editing
+// every record line above.
+inventory.forEach(i => { if (!i.dept) i.dept = 'IT'; if (i.warranty === undefined) i.warranty = ''; });
+maintenance.forEach(m => { if (!m.dept) m.dept = 'IT'; });
+transfers.forEach(t => { if (!t.dept) t.dept = 'IT'; });
+
+// Field labels per department for the 4 generic desc slots in Inventory
+const DEPT_FIELD_LABELS = {
+  'IT':                ['Processor', 'Model', 'Storage', 'RAM'],
+  'Air Conditioner':   ['Brand/Model', 'BTU/Capacity', 'Type (Split/Window/Cassette)', 'Refrigerant Type'],
+  'Electrical':        ['Type (Wiring/Panel/Socket/Lighting)', 'Location/Circuit', 'Capacity (Amp/Voltage)', ''],
+  'Civil':             ['Type (Door/Window/Roof/Plumbing)', 'Material', 'Building/Block Area', ''],
+};
+
+function onInvDeptChange() {
+  const dept = document.getElementById('inv-dept').value;
+  const labels = DEPT_FIELD_LABELS[dept] || DEPT_FIELD_LABELS['IT'];
+  [1,2,3,4].forEach(n => {
+    const labelEl = document.getElementById('inv-label-' + n);
+    const inputEl = document.getElementById('inv-desc' + n);
+    const text = labels[n-1];
+    labelEl.textContent = text || 'Notes';
+    inputEl.closest('.form-group').style.display = text ? '' : 'none';
+  });
+}
+
+function onDeptFilterChange() {
+  globalDept = document.getElementById('dept-filter').value;
+  if (currentPage === 'dashboard') renderDashboard();
+  else if (currentPage === 'inventory') { invPage = 1; renderInventory(); }
+  else if (currentPage === 'maintenance') { maintPage = 1; renderMaintenance(); }
+  else if (currentPage === 'transfer') { transPage = 1; renderTransfer(); }
+}
+
+// Warranty helpers
+function warrantyInfo(dateStr) {
+  if (!dateStr) return { label: '—', cls: '' };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const exp = new Date(dateStr);
+  const diffDays = Math.round((exp - today) / 86400000);
+  if (diffDays < 0) return { label: `Expired (${dateStr})`, cls: 'badge-repair' };
+  if (diffDays <= 30) return { label: `${dateStr} (${diffDays}d left)`, cls: 'badge-check' };
+  return { label: dateStr, cls: 'badge-ok' };
+}
 
 // ============================================================
 // NAVIGATION
@@ -912,6 +1155,7 @@ function showPage(page) {
     inventory: ['Inventory', 'All IT assets across both branches'],
     maintenance: ['Maintenance Log', 'Work orders and maintenance history'],
     transfer: ['Item Transfer', 'Track item movements between locations'],
+    software: ['Software Library', 'Installers, licenses, and download links'],
   };
   document.getElementById('page-title').textContent = titles[page][0];
   document.getElementById('page-sub').textContent = titles[page][1];
@@ -920,6 +1164,7 @@ function showPage(page) {
   else if (page === 'inventory') { invPage = 1; renderInventory(); }
   else if (page === 'maintenance') { maintPage = 1; renderMaintenance(); }
   else if (page === 'transfer') { transPage = 1; renderTransfer(); }
+  else if (page === 'software') { softPage = 1; renderSoftware(); }
 }
 
 // Click-through filters from Dashboard into list pages
@@ -938,14 +1183,31 @@ function dashboardFilter(page, field, value) {
   }
 }
 
+// Jump to Software Library and search by device code — finds software
+// whose Notes mention this device (since installs are logged by device
+// code, e.g. "Used on AFS/SA/PC/012 and ICT Room PCs").
+function viewSoftwareForDevice(deviceCode) {
+  showPage('software');
+  document.getElementById('soft-search').value = deviceCode;
+  document.getElementById('soft-filter-category').value = '';
+  softPage = 1;
+  renderSoftware();
+  const matches = software.filter(s => (s.notes||'').toLowerCase().includes(deviceCode.toLowerCase()));
+  if (matches.length === 0) {
+    showToast(`No software notes reference ${deviceCode} yet`, 'error');
+  }
+}
+
 // ============================================================
 // DASHBOARD
 // ============================================================
 function renderDashboard() {
-  const total = inventory.length;
-  const ok = inventory.filter(i => i.status === 'OK').length;
-  const issues = inventory.filter(i => i.status !== 'OK').length;
-  const wo = maintenance.length;
+  const invData = globalDept ? inventory.filter(i => i.dept === globalDept) : inventory;
+  const maintData = globalDept ? maintenance.filter(m => m.dept === globalDept) : maintenance;
+  const total = invData.length;
+  const ok = invData.filter(i => i.status === 'OK').length;
+  const issues = invData.filter(i => i.status !== 'OK').length;
+  const wo = maintData.length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-ok').textContent = ok;
   document.getElementById('stat-issues').textContent = issues;
@@ -953,10 +1215,10 @@ function renderDashboard() {
 
   // Status chart
   const statusCounts = {};
-  inventory.forEach(i => { statusCounts[i.status] = (statusCounts[i.status] || 0) + 1; });
-  const maxS = Math.max(...Object.values(statusCounts));
+  invData.forEach(i => { statusCounts[i.status] = (statusCounts[i.status] || 0) + 1; });
+  const maxS = Math.max(...Object.values(statusCounts), 1);
   const statusColors = { 'OK': '#22c55e', 'Need Repair': '#ef4444', 'Need to check': '#f59e0b', 'Severe blur': '#f97316' };
-  document.getElementById('status-chart').innerHTML = Object.entries(statusCounts).map(([k, v]) =>
+  document.getElementById('status-chart').innerHTML = Object.keys(statusCounts).length === 0 ? `<div class="empty-state"><p>No data for this department</p></div>` : Object.entries(statusCounts).map(([k, v]) =>
     `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','status','${k}')">
       <div class="bar-label">${k}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100)}%;background:${statusColors[k]||'#4f8ef7'}">${v}</div></div>
@@ -966,10 +1228,10 @@ function renderDashboard() {
 
   // Location chart
   const locCounts = {};
-  inventory.forEach(i => { locCounts[i.location] = (locCounts[i.location] || 0) + 1; });
-  const maxL = Math.max(...Object.values(locCounts));
+  invData.forEach(i => { locCounts[i.location] = (locCounts[i.location] || 0) + 1; });
+  const maxL = Math.max(...Object.values(locCounts), 1);
   const locColors = ['#4f8ef7','#7c5af7','#22c55e','#f59e0b'];
-  document.getElementById('location-chart').innerHTML = Object.entries(locCounts).map(([k, v], i) =>
+  document.getElementById('location-chart').innerHTML = Object.keys(locCounts).length === 0 ? `<div class="empty-state"><p>No data for this department</p></div>` : Object.entries(locCounts).map(([k, v], i) =>
     `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','location','${k}')">
       <div class="bar-label">${k}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxL*100)}%;background:${locColors[i%locColors.length]}">${v}</div></div>
@@ -979,9 +1241,9 @@ function renderDashboard() {
 
   // Type chart
   const typeCounts = {};
-  inventory.forEach(i => { typeCounts[i.item] = (typeCounts[i.item] || 0) + 1; });
-  const maxT = Math.max(...Object.values(typeCounts));
-  document.getElementById('type-chart').innerHTML = Object.entries(typeCounts).map(([k, v], i) =>
+  invData.forEach(i => { typeCounts[i.item] = (typeCounts[i.item] || 0) + 1; });
+  const maxT = Math.max(...Object.values(typeCounts), 1);
+  document.getElementById('type-chart').innerHTML = Object.keys(typeCounts).length === 0 ? `<div class="empty-state"><p>No data for this department</p></div>` : Object.entries(typeCounts).map(([k, v], i) =>
     `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','item','${k}')">
       <div class="bar-label">${k}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100)}%;background:#4f8ef7">${v}</div></div>
@@ -990,8 +1252,8 @@ function renderDashboard() {
   ).join('');
 
   // Recent jobs
-  const recent = [...maintenance].slice(-6).reverse();
-  document.getElementById('recent-jobs').innerHTML = recent.map(m =>
+  const recent = [...maintData].slice(-6).reverse();
+  document.getElementById('recent-jobs').innerHTML = recent.length === 0 ? `<div class="empty-state"><p>No recent jobs for this department</p></div>` : recent.map(m =>
     `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
       <div>
         <div style="font-size:13px;font-weight:600">${m.wo} — ${m.device}</div>
@@ -1019,15 +1281,27 @@ function statusBadge(status) {
 // ============================================================
 function getFilteredInventory() {
   const search = document.getElementById('inv-search').value.toLowerCase();
+  const fDept = document.getElementById('inv-filter-dept').value;
   const fType = document.getElementById('inv-filter-type').value;
   const fStatus = document.getElementById('inv-filter-status').value;
   const fLoc = document.getElementById('inv-filter-loc').value;
-  return inventory.filter(i =>
-    (!search || i.code.toLowerCase().includes(search) || i.owner.toLowerCase().includes(search) || i.item.toLowerCase().includes(search) || (i.remark||'').toLowerCase().includes(search)) &&
-    (!fType || i.item === fType) &&
-    (!fStatus || i.status === fStatus) &&
-    (!fLoc || i.location === fLoc)
-  );
+  const fWarranty = document.getElementById('inv-filter-warranty').value;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return inventory.filter(i => {
+    if (fWarranty && i.warranty) {
+      const diffDays = Math.round((new Date(i.warranty) - today) / 86400000);
+      if (fWarranty === 'expired' && diffDays >= 0) return false;
+      if (fWarranty === 'expiring' && (diffDays < 0 || diffDays > 30)) return false;
+    } else if (fWarranty) {
+      return false; // filtering by warranty status but no warranty date set
+    }
+    return (!search || i.code.toLowerCase().includes(search) || i.owner.toLowerCase().includes(search) || i.item.toLowerCase().includes(search) || (i.remark||'').toLowerCase().includes(search)) &&
+      (!globalDept || i.dept === globalDept) &&
+      (!fDept || i.dept === fDept) &&
+      (!fType || i.item === fType) &&
+      (!fStatus || i.status === fStatus) &&
+      (!fLoc || i.location === fLoc);
+  });
 }
 
 function renderInventory() {
@@ -1037,10 +1311,13 @@ function renderInventory() {
   const page = data.slice(start, start + PER_PAGE);
   document.getElementById('inv-count').textContent = `(${total} items)`;
   const tbody = document.getElementById('inv-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No items found</p></div></td></tr>` :
-    page.map((i, idx) => `
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="13"><div class="empty-state"><div class="icon">🔍</div><p>No items found</p></div></td></tr>` :
+    page.map((i, idx) => {
+      const w = warrantyInfo(i.warranty);
+      return `
       <tr>
         <td>${start + idx + 1}</td>
+        <td><span class="badge badge-completed">${i.dept}</span></td>
         <td style="font-family:monospace;font-size:12px;color:var(--accent)">${i.code}</td>
         <td>${i.item}</td>
         <td>${i.owner}</td>
@@ -1048,13 +1325,16 @@ function renderInventory() {
         <td style="font-size:12px">${i.desc1||'—'}</td>
         <td style="font-size:12px">${i.desc3||'—'}</td>
         <td style="font-size:12px">${i.desc4||'—'}</td>
+        <td>${w.cls ? `<span class="badge ${w.cls}">${w.label}</span>` : `<span style="font-size:12px;color:var(--text2)">${w.label}</span>`}</td>
         <td>${statusBadge(i.status)}</td>
         <td style="font-size:12px;color:var(--text2);max-width:160px">${i.remark||'—'}</td>
         <td><div class="actions">
           <button class="btn btn-secondary btn-sm" onclick="editInventory(${i.id})">✏️</button>
+          <button class="btn btn-secondary btn-sm" title="View related software" onclick="viewSoftwareForDevice('${i.code}')">💿</button>
           <button class="btn btn-danger btn-sm" onclick="deleteRecord('inventory',${i.id})">🗑️</button>
         </div></td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   renderPagination('inv', total, invPage, (p) => { invPage = p; renderInventory(); });
   document.getElementById('inv-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
 }
@@ -1063,10 +1343,12 @@ function openAddModal() {
   if (currentPage === 'inventory') {
     document.getElementById('inv-modal-title').textContent = 'Add Inventory Item';
     document.getElementById('inv-edit-id').value = '';
-    ['inv-code','inv-owner','inv-desc1','inv-desc2','inv-desc3','inv-desc4','inv-remark'].forEach(id => document.getElementById(id).value = '');
+    ['inv-code','inv-owner','inv-desc1','inv-desc2','inv-desc3','inv-desc4','inv-remark','inv-warranty'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('inv-dept').value = globalDept || 'IT';
     document.getElementById('inv-item').value = 'Dell CPU';
     document.getElementById('inv-location').value = 'ICT Room';
     document.getElementById('inv-status').value = 'OK';
+    onInvDeptChange();
     openModal('modal-inventory');
   } else if (currentPage === 'maintenance') {
     document.getElementById('maint-modal-title').textContent = 'Add Work Order';
@@ -1074,6 +1356,7 @@ function openAddModal() {
     const nextWO = 'CM' + String(maintenance.length + 1).padStart(4, '0');
     document.getElementById('maint-wo').value = nextWO;
     document.getElementById('maint-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('maint-dept').value = globalDept || 'IT';
     ['maint-device','maint-desc','maint-issue','maint-findings','maint-recommendation','maint-complete'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('maint-status').value = 'Pending';
     openModal('modal-maintenance');
@@ -1081,10 +1364,18 @@ function openAddModal() {
     document.getElementById('trans-modal-title').textContent = 'Add Transfer Record';
     document.getElementById('trans-edit-id').value = '';
     document.getElementById('trans-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('trans-dept').value = globalDept || 'IT';
     ['trans-code','trans-from','trans-to','trans-reason','trans-remark'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('trans-pic').value = 'Hafiz';
     document.getElementById('trans-auth').value = 'Hafiz';
     openModal('modal-transfer');
+  } else if (currentPage === 'software') {
+    document.getElementById('soft-modal-title').textContent = 'Add Software';
+    document.getElementById('soft-edit-id').value = '';
+    ['soft-name','soft-version','soft-license','soft-link','soft-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('soft-category').value = 'Utility';
+    document.getElementById('soft-source').value = 'Google Drive';
+    openModal('modal-software');
   }
 }
 
@@ -1093,16 +1384,19 @@ function editInventory(id) {
   if (!i) return;
   document.getElementById('inv-modal-title').textContent = 'Edit Inventory Item';
   document.getElementById('inv-edit-id').value = id;
+  document.getElementById('inv-dept').value = i.dept || 'IT';
   document.getElementById('inv-code').value = i.code;
   document.getElementById('inv-item').value = i.item;
   document.getElementById('inv-owner').value = i.owner;
   document.getElementById('inv-location').value = i.location;
+  document.getElementById('inv-warranty').value = i.warranty || '';
   document.getElementById('inv-desc1').value = i.desc1;
   document.getElementById('inv-desc2').value = i.desc2;
   document.getElementById('inv-desc3').value = i.desc3;
   document.getElementById('inv-desc4').value = i.desc4;
   document.getElementById('inv-status').value = i.status;
   document.getElementById('inv-remark').value = i.remark;
+  onInvDeptChange();
   openModal('modal-inventory');
 }
 
@@ -1111,9 +1405,11 @@ function saveInventory() {
   const code = document.getElementById('inv-code').value.trim();
   if (!code) { showToast('Item code is required', 'error'); return; }
   const obj = {
+    dept: document.getElementById('inv-dept').value,
     code, item: document.getElementById('inv-item').value,
     owner: document.getElementById('inv-owner').value,
     location: document.getElementById('inv-location').value,
+    warranty: document.getElementById('inv-warranty').value,
     desc1: document.getElementById('inv-desc1').value,
     desc2: document.getElementById('inv-desc2').value,
     desc3: document.getElementById('inv-desc3').value,
@@ -1139,9 +1435,12 @@ function saveInventory() {
 // ============================================================
 function getFilteredMaintenance() {
   const search = document.getElementById('maint-search').value.toLowerCase();
+  const fDept = document.getElementById('maint-filter-dept').value;
   const fStatus = document.getElementById('maint-filter-status').value;
   return maintenance.filter(m =>
     (!search || m.wo.toLowerCase().includes(search) || m.device.toLowerCase().includes(search) || m.issue.toLowerCase().includes(search)) &&
+    (!globalDept || m.dept === globalDept) &&
+    (!fDept || m.dept === fDept) &&
     (!fStatus || m.status === fStatus)
   );
 }
@@ -1153,9 +1452,10 @@ function renderMaintenance() {
   const page = data.slice(start, start + PER_PAGE);
   document.getElementById('maint-count').textContent = `(${total} records)`;
   const tbody = document.getElementById('maint-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="10"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
     page.map(m => `
       <tr>
+        <td><span class="badge badge-completed">${m.dept}</span></td>
         <td style="font-weight:600;color:var(--accent)">${m.wo}</td>
         <td style="font-size:12px">${m.dateCheck}</td>
         <td style="font-family:monospace;font-size:12px">${m.device}</td>
@@ -1179,6 +1479,7 @@ function editMaintenance(id) {
   if (!m) return;
   document.getElementById('maint-modal-title').textContent = 'Edit Work Order';
   document.getElementById('maint-edit-id').value = id;
+  document.getElementById('maint-dept').value = m.dept || 'IT';
   document.getElementById('maint-wo').value = m.wo;
   document.getElementById('maint-date').value = m.dateCheck;
   document.getElementById('maint-device').value = m.device;
@@ -1197,6 +1498,7 @@ function saveMaintenance() {
   const device = document.getElementById('maint-device').value.trim();
   if (!wo || !device) { showToast('Work Order No and Device are required', 'error'); return; }
   const obj = {
+    dept: document.getElementById('maint-dept').value,
     wo, dateCheck: document.getElementById('maint-date').value,
     device, desc: document.getElementById('maint-desc').value,
     issue: document.getElementById('maint-issue').value,
@@ -1250,8 +1552,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 function getFilteredTransfer() {
   const search = document.getElementById('trans-search').value.toLowerCase();
+  const fDept = document.getElementById('trans-filter-dept').value;
   return transfers.filter(t =>
-    !search || t.code.toLowerCase().includes(search) || t.from.toLowerCase().includes(search) || t.to.toLowerCase().includes(search) || (t.reason||'').toLowerCase().includes(search)
+    (!search || t.code.toLowerCase().includes(search) || t.from.toLowerCase().includes(search) || t.to.toLowerCase().includes(search) || (t.reason||'').toLowerCase().includes(search)) &&
+    (!globalDept || t.dept === globalDept) &&
+    (!fDept || t.dept === fDept)
   );
 }
 
@@ -1262,10 +1567,11 @@ function renderTransfer() {
   const page = data.slice(start, start + PER_PAGE);
   document.getElementById('trans-count').textContent = `(${total} records)`;
   const tbody = document.getElementById('trans-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="10"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
     page.map((t, idx) => `
       <tr>
         <td>${start + idx + 1}</td>
+        <td><span class="badge badge-completed">${t.dept}</span></td>
         <td style="font-size:12px">${t.date}</td>
         <td style="font-family:monospace;font-size:12px;color:var(--accent)">${t.code}</td>
         <td>${t.from}</td>
@@ -1288,6 +1594,7 @@ function editTransfer(id) {
   if (!t) return;
   document.getElementById('trans-modal-title').textContent = 'Edit Transfer Record';
   document.getElementById('trans-edit-id').value = id;
+  document.getElementById('trans-dept').value = t.dept || 'IT';
   document.getElementById('trans-date').value = t.date;
   document.getElementById('trans-code').value = t.code;
   document.getElementById('trans-from').value = t.from;
@@ -1306,6 +1613,7 @@ function saveTransfer() {
   const to = document.getElementById('trans-to').value.trim();
   if (!code || !from || !to) { showToast('Code, From and To are required', 'error'); return; }
   const obj = {
+    dept: document.getElementById('trans-dept').value,
     date: document.getElementById('trans-date').value,
     code, from, to,
     pic: document.getElementById('trans-pic').value,
@@ -1327,6 +1635,104 @@ function saveTransfer() {
 }
 
 // ============================================================
+// SOFTWARE LIBRARY
+// ============================================================
+function maskKey(key) {
+  if (!key) return '—';
+  return '•••• hidden';
+}
+
+function getFilteredSoftware() {
+  const search = document.getElementById('soft-search').value.toLowerCase();
+  const fCat = document.getElementById('soft-filter-category').value;
+  return software.filter(s =>
+    (!search || s.name.toLowerCase().includes(search) || (s.notes||'').toLowerCase().includes(search)) &&
+    (!fCat || s.category === fCat)
+  );
+}
+
+function renderSoftware() {
+  const data = getFilteredSoftware();
+  const total = data.length;
+  const start = (softPage - 1) * PER_PAGE;
+  const page = data.slice(start, start + PER_PAGE);
+  document.getElementById('soft-count').textContent = `(${total} items)`;
+  const tbody = document.getElementById('soft-tbody');
+  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="8"><div class="empty-state"><div class="icon">💿</div><p>No software found</p></div></td></tr>` :
+    page.map(s => `
+      <tr>
+        <td style="font-weight:600">${s.name}</td>
+        <td><span class="badge badge-completed">${s.category}</span></td>
+        <td style="font-size:12px">${s.version||'—'}</td>
+        <td style="font-size:12px;font-family:monospace">
+          <span id="key-display-${s.id}">${maskKey(s.license)}</span>
+          ${s.license ? `<button class="btn btn-secondary btn-sm" style="margin-left:6px;padding:2px 7px" onclick="toggleKey(${s.id})">👁️</button>` : ''}
+        </td>
+        <td style="font-size:12px">${s.source}</td>
+        <td style="font-size:12px;color:var(--text2);max-width:180px">${s.notes||'—'}</td>
+        <td><a href="${s.link}" target="_blank" rel="noopener"><button class="btn btn-success btn-sm">⬇️ Get</button></a></td>
+        <td><div class="actions">
+          <button class="btn btn-secondary btn-sm" onclick="editSoftware(${s.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('software',${s.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('');
+  renderPagination('soft', total, softPage, (p) => { softPage = p; renderSoftware(); });
+  document.getElementById('soft-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+}
+
+function toggleKey(id) {
+  const s = software.find(x => x.id === id);
+  const el = document.getElementById(`key-display-${id}`);
+  if (!s || !el) return;
+  if (el.textContent.includes('hidden')) {
+    el.textContent = s.license;
+    setTimeout(() => { if (el) el.textContent = maskKey(s.license); }, 8000); // auto re-hide after 8s
+  } else {
+    el.textContent = maskKey(s.license);
+  }
+}
+
+function editSoftware(id) {
+  const s = software.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('soft-modal-title').textContent = 'Edit Software';
+  document.getElementById('soft-edit-id').value = id;
+  document.getElementById('soft-name').value = s.name;
+  document.getElementById('soft-category').value = s.category;
+  document.getElementById('soft-version').value = s.version;
+  document.getElementById('soft-license').value = s.license;
+  document.getElementById('soft-source').value = s.source;
+  document.getElementById('soft-link').value = s.link;
+  document.getElementById('soft-notes').value = s.notes;
+  openModal('modal-software');
+}
+
+function saveSoftware() {
+  const editId = document.getElementById('soft-edit-id').value;
+  const name = document.getElementById('soft-name').value.trim();
+  const link = document.getElementById('soft-link').value.trim();
+  if (!name || !link) { showToast('Software name and download link are required', 'error'); return; }
+  const obj = {
+    name, category: document.getElementById('soft-category').value,
+    version: document.getElementById('soft-version').value,
+    license: document.getElementById('soft-license').value,
+    source: document.getElementById('soft-source').value,
+    link, notes: document.getElementById('soft-notes').value,
+  };
+  if (editId) {
+    const idx = software.findIndex(x => x.id == editId);
+    software[idx] = { ...software[idx], ...obj };
+    showToast('Software updated', 'success');
+  } else {
+    software.push({ id: nextSoftId++, ...obj });
+    showToast('Software added', 'success');
+  }
+  closeModal('modal-software');
+  renderSoftware();
+  pushToSheets();
+}
+
+// ============================================================
 // DELETE
 // ============================================================
 function deleteRecord(type, id) {
@@ -1340,12 +1746,14 @@ function confirmDelete() {
   if (type === 'inventory') inventory = inventory.filter(x => x.id !== id);
   else if (type === 'maintenance') maintenance = maintenance.filter(x => x.id !== id);
   else if (type === 'transfer') transfers = transfers.filter(x => x.id !== id);
+  else if (type === 'software') software = software.filter(x => x.id !== id);
   deleteTarget = null;
   closeModal('modal-confirm');
   showToast('Record deleted', 'success');
   if (type === 'inventory') renderInventory();
   else if (type === 'maintenance') renderMaintenance();
-  else renderTransfer();
+  else if (type === 'transfer') renderTransfer();
+  else renderSoftware();
   pushToSheets();
 }
 
@@ -1369,17 +1777,26 @@ function renderPagination(prefix, total, current, onChange) {
 function exportData() {
   let csv = '', filename = '';
   if (currentPage === 'inventory') {
-    csv = 'No,Code,Item,Owner,Location,Processor,Model,Storage,RAM,Status,Remark\n' +
-      inventory.map((i,idx) => [idx+1,i.code,i.item,i.owner,i.location,i.desc1,i.desc2,i.desc3,i.desc4,i.status,i.remark].map(v => `"${v||''}"`).join(',')).join('\n');
+    const data = getFilteredInventory();
+    csv = 'No,Department,Code,Item,Owner,Location,Warranty,Field1,Field2,Field3,Field4,Status,Remark\n' +
+      data.map((i,idx) => [idx+1,i.dept,i.code,i.item,i.owner,i.location,i.warranty,i.desc1,i.desc2,i.desc3,i.desc4,i.status,i.remark].map(v => `"${v||''}"`).join(',')).join('\n');
     filename = 'AFS_Inventory.csv';
   } else if (currentPage === 'maintenance') {
-    csv = 'Work Order,Date Checked,Device,Description,Issue,Findings,Recommendation,Status,Date Completed\n' +
-      maintenance.map(m => [m.wo,m.dateCheck,m.device,m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete].map(v => `"${v||''}"`).join(',')).join('\n');
+    const data = getFilteredMaintenance();
+    csv = 'Department,Work Order,Date Checked,Device,Description,Issue,Findings,Recommendation,Status,Date Completed\n' +
+      data.map(m => [m.dept,m.wo,m.dateCheck,m.device,m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete].map(v => `"${v||''}"`).join(',')).join('\n');
     filename = 'AFS_Maintenance_Log.csv';
   } else if (currentPage === 'transfer') {
-    csv = 'No,Date,Item Code,From,To,Person in Charge,Reason,Authorized By,Remark\n' +
-      transfers.map((t,idx) => [idx+1,t.date,t.code,t.from,t.to,t.pic,t.reason,t.auth,t.remark].map(v => `"${v||''}"`).join(',')).join('\n');
+    const data = getFilteredTransfer();
+    csv = 'No,Department,Date,Item Code,From,To,Person in Charge,Reason,Authorized By,Remark\n' +
+      data.map((t,idx) => [idx+1,t.dept,t.date,t.code,t.from,t.to,t.pic,t.reason,t.auth,t.remark].map(v => `"${v||''}"`).join(',')).join('\n');
     filename = 'AFS_Transfer_Log.csv';
+  } else if (currentPage === 'software') {
+    // License keys are deliberately left out of the export for safety.
+    const data = getFilteredSoftware();
+    csv = 'Software,Category,Version,Source,Link,Notes\n' +
+      data.map(s => [s.name,s.category,s.version,s.source,s.link,s.notes].map(v => `"${v||''}"`).join(',')).join('\n');
+    filename = 'AFS_Software_Library.csv';
   }
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -1412,7 +1829,7 @@ function showToast(msg, type = 'success') {
 // ============================================================
 // Change these to your own credentials before sharing the file.
 const APP_USERNAME = "hafiz";
-const APP_PASSWORD = "070216";
+const APP_PASSWORD = "changeme123";
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -1437,7 +1854,7 @@ function doLogin() {
 //                   placeholder text below, Sync will refuse to run.
 // ===========================================================
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwdZ0dkQJnYJsmIXVhT9VqP5oZ9SRCX-9OznIYWeq0C__-aA_hmrrGEV2lI_DQa93_M/exec";
-const SHEETS_KEY = "Afadmin1"; // <-- replace this text only, keep the quotes
+const SHEETS_KEY = "PASTE_YOUR_SECRET_KEY_HERE"; // <-- replace this text only, keep the quotes
 
 function setSyncStatus(text, color) {
   const el = document.getElementById('sync-status');
@@ -1445,7 +1862,7 @@ function setSyncStatus(text, color) {
 }
 
 function isSheetsConnected() {
-  return SHEETS_URL && SHEETS_KEY && SHEETS_KEY !== "AFadmin1";
+  return SHEETS_URL && SHEETS_KEY && SHEETS_KEY !== "PASTE_YOUR_SECRET_KEY_HERE";
 }
 
 // One-time button: pushes whatever is currently loaded in the app
@@ -1470,32 +1887,40 @@ async function syncFromSheets() {
   }
   setSyncStatus('Syncing...', 'var(--yellow)');
   try {
-    const [invRes, maintRes, transRes] = await Promise.all([
+    const [invRes, maintRes, transRes, softRes] = await Promise.all([
       fetch(`${SHEETS_URL}?action=read&sheet=Inventory&key=${SHEETS_KEY}`).then(r => r.json()),
       fetch(`${SHEETS_URL}?action=read&sheet=Maintenance&key=${SHEETS_KEY}`).then(r => r.json()),
       fetch(`${SHEETS_URL}?action=read&sheet=Transfer&key=${SHEETS_KEY}`).then(r => r.json()),
+      fetch(`${SHEETS_URL}?action=read&sheet=Software&key=${SHEETS_KEY}`).then(r => r.json()).catch(() => ({data: []})),
     ]);
     if (invRes.data && invRes.data.length) {
       inventory = invRes.data.map(r => ({
-        id: Number(r.ID), no: Number(r.No), owner: r.Owner, code: r.Code, location: r.Location,
-        item: r.Item, desc1: r.Desc1, desc2: r.Desc2, desc3: r.Desc3, desc4: r.Desc4, desc5: r.Desc5,
+        id: Number(r.ID), no: Number(r.No), dept: r.Department || 'IT', owner: r.Owner, code: r.Code, location: r.Location,
+        item: r.Item, warranty: r.Warranty || '', desc1: r.Desc1, desc2: r.Desc2, desc3: r.Desc3, desc4: r.Desc4, desc5: r.Desc5,
         status: r.Status, remark: r.Remark
       }));
       nextInvId = Math.max(...inventory.map(i => i.id), 0) + 1;
     }
     if (maintRes.data && maintRes.data.length) {
       maintenance = maintRes.data.map(r => ({
-        id: Number(r.ID), wo: r.WO, dateCheck: r.DateCheck, device: r.Device, desc: r.Desc,
+        id: Number(r.ID), dept: r.Department || 'IT', wo: r.WO, dateCheck: r.DateCheck, device: r.Device, desc: r.Desc,
         issue: r.Issue, findings: r.Findings, recommendation: r.Recommendation, status: r.Status, dateComplete: r.DateComplete
       }));
       nextMaintId = Math.max(...maintenance.map(m => m.id), 0) + 1;
     }
     if (transRes.data && transRes.data.length) {
       transfers = transRes.data.map(r => ({
-        id: Number(r.ID), no: Number(r.No), date: r.Date, code: r.Code, from: r.From, to: r.To,
+        id: Number(r.ID), no: Number(r.No), dept: r.Department || 'IT', date: r.Date, code: r.Code, from: r.From, to: r.To,
         pic: r.PIC, reason: r.Reason, auth: r.Auth, remark: r.Remark
       }));
       nextTransId = Math.max(...transfers.map(t => t.id), 0) + 1;
+    }
+    if (softRes.data && softRes.data.length) {
+      software = softRes.data.map(r => ({
+        id: Number(r.ID), name: r.Name, category: r.Category, version: r.Version,
+        license: r.License, source: r.Source, link: r.Link, notes: r.Notes
+      }));
+      nextSoftId = Math.max(...software.map(s => s.id), 0) + 1;
     }
     setSyncStatus('Synced just now', 'var(--green)');
     showToast('Data synced from Google Sheets', 'success');
@@ -1503,6 +1928,7 @@ async function syncFromSheets() {
     if (currentPage === 'inventory') renderInventory();
     if (currentPage === 'maintenance') renderMaintenance();
     if (currentPage === 'transfer') renderTransfer();
+    if (currentPage === 'software') renderSoftware();
   } catch (err) {
     setSyncStatus('Sync failed', 'var(--red)');
     showToast('Could not reach Google Sheets', 'error');
@@ -1520,25 +1946,32 @@ async function pushToSheets() {
       fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
         action: 'write', sheet: 'Inventory', key: SHEETS_KEY,
         records: JSON.stringify(inventory.map(i => ({
-          ID: i.id, No: i.no, Owner: i.owner, Code: i.code, Location: i.location, Item: i.item,
-          Desc1: i.desc1, Desc2: i.desc2, Desc3: i.desc3, Desc4: i.desc4, Desc5: i.desc5,
+          ID: i.id, No: i.no, Department: i.dept, Owner: i.owner, Code: i.code, Location: i.location, Item: i.item,
+          Warranty: i.warranty, Desc1: i.desc1, Desc2: i.desc2, Desc3: i.desc3, Desc4: i.desc4, Desc5: i.desc5,
           Status: i.status, Remark: i.remark
         })))
       })}),
       fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
         action: 'write', sheet: 'Maintenance', key: SHEETS_KEY,
         records: JSON.stringify(maintenance.map(m => ({
-          ID: m.id, WO: m.wo, DateCheck: m.dateCheck, Device: m.device, Desc: m.desc, Issue: m.issue,
+          ID: m.id, Department: m.dept, WO: m.wo, DateCheck: m.dateCheck, Device: m.device, Desc: m.desc, Issue: m.issue,
           Findings: m.findings, Recommendation: m.recommendation, Status: m.status, DateComplete: m.dateComplete
         })))
       })}),
       fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
         action: 'write', sheet: 'Transfer', key: SHEETS_KEY,
         records: JSON.stringify(transfers.map(t => ({
-          ID: t.id, No: t.no, Date: t.date, Code: t.code, From: t.from, To: t.to,
+          ID: t.id, No: t.no, Department: t.dept, Date: t.date, Code: t.code, From: t.from, To: t.to,
           PIC: t.pic, Reason: t.reason, Auth: t.auth, Remark: t.remark
         })))
       })}),
+      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
+        action: 'write', sheet: 'Software', key: SHEETS_KEY,
+        records: JSON.stringify(software.map(s => ({
+          ID: s.id, Name: s.name, Category: s.category, Version: s.version,
+          License: s.license, Source: s.source, Link: s.link, Notes: s.notes
+        })))
+      })}).catch(() => null), // Software tab is optional — won't break sync if missing
     ]);
     setSyncStatus('Saved to Sheets', 'var(--green)');
   } catch (err) {
