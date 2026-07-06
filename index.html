@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,256 +6,147 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFS IT Management System</title>
 <style>
-  :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3350;
-    --accent: #4f8ef7;
-    --accent2: #7c5af7;
-    --green: #22c55e;
-    --yellow: #f59e0b;
-    --red: #ef4444;
-    --orange: #f97316;
-    --text: #e8eaf0;
-    --text2: #8b91a8;
-    --font: 'Segoe UI', system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; }
-
-  /* SIDEBAR */
-  .sidebar {
-    width: 220px; min-height: 100vh; background: var(--surface);
-    border-right: 1px solid var(--border); display: flex; flex-direction: column;
-    position: fixed; top: 0; left: 0; z-index: 100;
-  }
-  .sidebar-logo {
-    padding: 20px 18px 16px; border-bottom: 1px solid var(--border);
-  }
-  .sidebar-logo .org { font-size: 11px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; }
-  .sidebar-logo .sys { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
-  .sidebar-logo .badge { font-size: 10px; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-top: 6px; }
-  .nav { flex: 1; padding: 12px 0; }
-  .nav-section { font-size: 10px; color: var(--text2); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 18px 6px; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: 9px 18px;
-    cursor: pointer; font-size: 13px; color: var(--text2);
-    transition: all 0.15s; border-left: 3px solid transparent;
-  }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: var(--surface2); color: var(--accent); border-left-color: var(--accent); }
-  .nav-item .icon { width: 18px; text-align: center; font-size: 14px; }
-  .sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text2); }
-  .sidebar-footer span { color: var(--accent); font-weight: 600; }
-
-  /* MAIN */
-  .main { margin-left: 220px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
-  .topbar {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 50;
-  }
-  .topbar-title { font-size: 17px; font-weight: 600; }
-  .topbar-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
-  .topbar-right { display: flex; gap: 10px; align-items: center; }
-  .btn {
-    padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; transition: all 0.15s;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #3a7ae0; }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: var(--border); }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-danger:hover { background: #dc2626; }
-  .btn-success { background: var(--green); color: #fff; }
-  .btn-success:hover { background: #16a34a; }
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
-
-  .content { padding: 24px 28px; flex: 1; }
-
-  /* DASHBOARD CARDS */
-  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 18px 20px; position: relative; overflow: hidden;
-  }
-  .stat-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  }
-  .stat-card.blue::before { background: var(--accent); }
-  .stat-card.green::before { background: var(--green); }
-  .stat-card.yellow::before { background: var(--yellow); }
-  .stat-card.red::before { background: var(--red); }
-  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
-  .stat-value { font-size: 32px; font-weight: 700; margin: 6px 0 2px; }
-  .stat-sub { font-size: 12px; color: var(--text2); }
-  .stat-icon { position: absolute; top: 16px; right: 16px; font-size: 26px; opacity: 0.15; }
-
-  /* CHARTS ROW */
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-  .chart-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px;
-  }
-  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; }
-  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
-  .bar-row { display: flex; align-items: center; gap: 10px; }
-  .bar-label { font-size: 12px; color: var(--text2); width: 100px; flex-shrink: 0; text-align: right; }
-  .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 22px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; color: #fff; transition: width 0.8s ease; }
-  .bar-count { font-size: 12px; color: var(--text2); width: 28px; text-align: right; }
-
-  .donut-wrap { display: flex; align-items: center; gap: 20px; }
-  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
-  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-  /* TABLE */
-  .table-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
-  }
-  .table-header {
-    padding: 14px 20px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-  }
-  .table-title { font-size: 14px; font-weight: 600; }
-  .table-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .search-input {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 12px; border-radius: 6px; font-size: 13px; width: 200px;
-  }
-  .search-input:focus { outline: none; border-color: var(--accent); }
-  .filter-select {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 10px; border-radius: 6px; font-size: 13px;
-  }
-  .filter-select:focus { outline: none; border-color: var(--accent); }
-
-  .data-table { width: 100%; border-collapse: collapse; }
-  .data-table th {
-    background: var(--surface2); color: var(--text2); font-size: 11px;
-    text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px;
-    text-align: left; font-weight: 600; border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  .data-table td {
-    padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: var(--surface2); }
-  .data-table .actions { display: flex; gap: 6px; }
-  .table-pagination {
-    padding: 12px 20px; border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text2);
-  }
-  .pagination-btns { display: flex; gap: 4px; }
-  .page-btn {
-    padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-  }
-  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .page-btn:hover:not(.active) { background: var(--border); }
-
-  /* BADGES */
-  .badge {
-    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    display: inline-block; white-space: nowrap;
-  }
-  .badge-ok { background: rgba(34,197,94,0.15); color: var(--green); }
-  .badge-repair { background: rgba(239,68,68,0.15); color: var(--red); }
-  .badge-check { background: rgba(245,158,11,0.15); color: var(--yellow); }
-  .badge-completed { background: rgba(79,142,247,0.15); color: var(--accent); }
-  .badge-pending { background: rgba(249,115,22,0.15); color: var(--orange); }
-  .badge-inprogress { background: rgba(124,90,247,0.15); color: var(--accent2); }
-  .badge-blur { background: rgba(239,68,68,0.15); color: var(--red); }
-
-  /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    z-index: 1000; align-items: center; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    width: 640px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
-  }
-  .modal-head {
-    padding: 18px 22px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .modal-head h3 { font-size: 15px; font-weight: 600; }
-  .modal-close { cursor: pointer; color: var(--text2); font-size: 20px; background: none; border: none; color: var(--text2); }
-  .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 22px; }
-  .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-  .form-row.full { grid-template-columns: 1fr; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-label { font-size: 12px; color: var(--text2); font-weight: 500; }
-  .form-input, .form-select, .form-textarea {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: var(--font);
-  }
-  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
-  .form-textarea { resize: vertical; min-height: 70px; }
-
-  /* PAGE SECTIONS */
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px;
-    font-size: 13px; z-index: 9999; transform: translateY(100px); opacity: 0;
-    transition: all 0.3s; display: flex; align-items: center; gap: 10px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-left: 4px solid var(--green); }
-  .toast.error { border-left: 4px solid var(--red); }
-
-  /* DETAIL VIEW */
-  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .detail-item { background: var(--surface2); border-radius: 8px; padding: 12px 16px; }
-  .detail-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-  .detail-value { font-size: 14px; font-weight: 500; }
-
-  .empty-state { text-align: center; padding: 48px 24px; color: var(--text2); }
-  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
-  .empty-state p { font-size: 14px; }
-
-  canvas { max-width: 100%; }
-
-  @media (max-width: 900px) {
-    .stat-grid { grid-template-columns: 1fr 1fr; }
-    .charts-row { grid-template-columns: 1fr; }
-    .form-row { grid-template-columns: 1fr; }
-  }
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;--accent:#4f8ef7;--accent2:#7c5af7;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--orange:#f97316;--text:#e8eaf0;--text2:#8b91a8;--font:'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex}
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo .org{font-size:11px;color:var(--text2);letter-spacing:2px;text-transform:uppercase}
+.sidebar-logo .sys{font-size:16px;font-weight:700;color:var(--text);margin-top:2px}
+.sidebar-logo .badge{font-size:10px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:6px}
+.nav{flex:1;padding:12px 0}
+.nav-section{font-size:10px;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;padding:14px 18px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface2);color:var(--accent);border-left-color:var(--accent)}
+.nav-item .icon{width:18px;text-align:center;font-size:14px}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)}
+.sidebar-footer span{color:var(--accent);font-weight:600}
+.main{margin-left:220px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:17px;font-weight:600}
+.topbar-sub{font-size:12px;color:var(--text2);margin-top:1px}
+.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#3a7ae0}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#16a34a}
+.btn-sm{padding:4px 10px;font-size:12px}
+.content{padding:24px 28px;flex:1}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.stat-card:hover{border-color:var(--accent)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.blue::before{background:var(--accent)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.yellow::before{background:var(--yellow)}
+.stat-card.red::before{background:var(--red)}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.stat-value{font-size:32px;font-weight:700;margin:6px 0 2px}
+.stat-sub{font-size:12px;color:var(--text2)}
+.stat-icon{position:absolute;top:16px;right:16px;font-size:26px;opacity:.15}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px}
+.bar-chart{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:4px;padding:2px}
+.bar-row:hover{background:var(--surface2)}
+.bar-label{font-size:12px;color:var(--text2);width:110px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;background:var(--surface2);border-radius:4px;height:22px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;color:#fff;transition:width .8s ease}
+.bar-count{font-size:12px;color:var(--text2);width:28px;text-align:right}
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.table-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.table-title{font-size:14px;font-weight:600}
+.table-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;width:200px}
+.search-input:focus{outline:none;border-color:var(--accent)}
+.filter-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:13px}
+.filter-select:focus{outline:none;border-color:var(--accent)}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{background:var(--surface2);color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:10px 14px;text-align:left;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--surface2)}
+.data-table .actions{display:flex;gap:6px}
+.table-pagination{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text2)}
+.pagination-btns{display:flex;gap:4px}
+.page-btn{padding:4px 10px;border-radius:5px;font-size:12px;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.page-btn:hover:not(.active){background:var(--border)}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block;white-space:nowrap}
+.badge-ok{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-repair{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-check{background:rgba(245,158,11,.15);color:var(--yellow)}
+.badge-completed{background:rgba(79,142,247,.15);color:var(--accent)}
+.badge-pending{background:rgba(249,115,22,.15);color:var(--orange)}
+.badge-inprogress{background:rgba(124,90,247,.15);color:var(--accent2)}
+.badge-blur{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-dept{background:rgba(124,90,247,.12);color:var(--accent2)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:660px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:15px;font-weight:600}
+.modal-close{cursor:pointer;color:var(--text2);font-size:20px;background:none;border:none}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12px;color:var(--text2);font-weight:500}
+.form-input,.form-select,.form-textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px;font-family:var(--font)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:70px}
+.photo-upload-area{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s}
+.photo-upload-area:hover{border-color:var(--accent)}
+.photo-thumb{width:120px;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.photo-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.page{display:none}
+.page.active{display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text2)}
+.empty-state .icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:14px}
+.role-badge-admin{background:rgba(79,142,247,.2);color:var(--accent);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.role-badge-staff{background:rgba(34,197,94,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.warranty-ok{color:var(--green);font-size:12px}
+.warranty-warn{color:var(--yellow);font-size:12px;font-weight:600}
+.warranty-exp{color:var(--red);font-size:12px;font-weight:600}
+@media(max-width:900px){.stat-grid{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login-screen" style="position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px;width:340px;max-width:90vw;">
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:28px;margin-bottom:6px">🔐</div>
-      <div style="font-size:18px;font-weight:700">AFS IT System</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:4px">Restricted access — authorized personnel only</div>
+<!-- LOGIN -->
+<div id="login-screen" style="position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px;width:360px;max-width:90vw">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:36px;margin-bottom:8px">🔐</div>
+      <div style="font-size:20px;font-weight:700">AFS IT System</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">Authorized personnel only</div>
     </div>
     <div class="form-group" style="margin-bottom:14px">
       <label class="form-label">Username</label>
-      <input class="form-input" id="login-user" placeholder="Enter username" style="width:100%">
+      <input class="form-input" id="login-user" placeholder="Enter username" autocomplete="username">
     </div>
-    <div class="form-group" style="margin-bottom:18px">
+    <div class="form-group" style="margin-bottom:20px">
       <label class="form-label">Password</label>
-      <input class="form-input" type="password" id="login-pass" placeholder="Enter password" style="width:100%" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="form-input" type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="doLogin()">Sign In</button>
-    <div id="login-error" style="color:var(--red);font-size:12px;margin-top:10px;text-align:center;display:none">Incorrect username or password</div>
+    <button class="btn btn-primary" style="width:100%;padding:10px;font-size:14px" onclick="doLogin()">Sign In</button>
+    <div id="login-error" style="color:var(--red);font-size:12px;margin-top:12px;text-align:center;display:none">Incorrect username or password</div>
+    <div id="login-loading" style="color:var(--text2);font-size:12px;margin-top:12px;text-align:center;display:none">Checking credentials...</div>
   </div>
 </div>
 
@@ -267,30 +159,24 @@
   </div>
   <nav class="nav">
     <div class="nav-section">Main</div>
-    <div class="nav-item active" onclick="showPage('dashboard')">
-      <span class="icon">📊</span> Dashboard
-    </div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-section">Records</div>
-    <div class="nav-item" onclick="showPage('inventory')">
-      <span class="icon">🖥️</span> Inventory
-    </div>
-    <div class="nav-item" onclick="showPage('maintenance')">
-      <span class="icon">🔧</span> Maintenance Log
-    </div>
-    <div class="nav-item" onclick="showPage('transfer')">
-      <span class="icon">🔄</span> Item Transfer
-    </div>
+    <div class="nav-item" onclick="showPage('inventory')"><span class="icon">🖥️</span> Inventory</div>
+    <div class="nav-item" onclick="showPage('maintenance')"><span class="icon">🔧</span> Maintenance Log</div>
+    <div class="nav-item" onclick="showPage('transfer')"><span class="icon">🔄</span> Item Transfer</div>
     <div class="nav-section">Resources</div>
-    <div class="nav-item" onclick="showPage('software')">
-      <span class="icon">💿</span> Software Library
-    </div>
+    <div class="nav-item" onclick="showPage('software')"><span class="icon">💿</span> Software Library</div>
+    <div class="nav-section">Account</div>
+    <div class="nav-item admin-only" onclick="showPage('settings')"><span class="icon">⚙️</span> Settings</div>
+    <div class="nav-item" onclick="doLogout()"><span class="icon">🚪</span> Logout</div>
   </nav>
   <div class="sidebar-footer">
-    Logged in as <span>Hafiz</span><br>IT Department
+    <span id="sidebar-user">—</span> &nbsp;<span id="sidebar-role-badge"></span><br>
+    <span style="color:var(--text2)">AFS IT Management</span>
   </div>
 </aside>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <main class="main">
   <div class="topbar">
     <div>
@@ -300,302 +186,235 @@
     <div class="topbar-right">
       <select class="filter-select" id="dept-filter" onchange="onDeptFilterChange()" style="font-weight:600">
         <option value="">All Departments</option>
-        <option value="IT">IT</option>
-        <option value="Air Conditioner">Air Conditioner</option>
-        <option value="Electrical">Electrical</option>
-        <option value="Civil">Civil</option>
+        <option>IT</option>
+        <option>Air Conditioner</option>
+        <option>Electrical</option>
+        <option>Civil</option>
       </select>
-      <span id="sync-status" style="font-size:12px;color:var(--text2)">●  Local only</span>
-      <button class="btn btn-secondary" onclick="initialPushToSheets()" id="initial-push-btn">⬆️ Push to Sheets (first time)</button>
+      <span id="sync-status" style="font-size:12px;color:var(--text2)">● Local</span>
+      <button class="btn btn-secondary admin-only" onclick="initialPushToSheets()" title="Push all data to Google Sheets (first time setup)">⬆️ Push</button>
       <button class="btn btn-secondary" onclick="syncFromSheets()">🔄 Sync</button>
-      <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+      <button class="btn btn-secondary admin-only" onclick="exportData()">📥 Export</button>
       <button class="btn btn-primary" id="add-btn" onclick="openAddModal()">+ Add Record</button>
     </div>
   </div>
 
   <div class="content">
 
-    <!-- DASHBOARD PAGE -->
+    <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stat-grid">
-        <div class="stat-card blue" style="cursor:pointer" onclick="dashboardFilter('inventory','status','')">
-          <div class="stat-icon">🖥️</div>
-          <div class="stat-label">Total Devices</div>
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-sub">Across both branches</div>
+        <div class="stat-card blue" onclick="dashboardFilter('inventory','status','')">
+          <div class="stat-icon">🖥️</div><div class="stat-label">Total Devices</div>
+          <div class="stat-value" id="stat-total">0</div><div class="stat-sub">Across both branches</div>
         </div>
-        <div class="stat-card green" style="cursor:pointer" onclick="dashboardFilter('inventory','status','OK')">
-          <div class="stat-icon">✅</div>
-          <div class="stat-label">Operational</div>
-          <div class="stat-value" id="stat-ok">0</div>
-          <div class="stat-sub">Status: OK</div>
+        <div class="stat-card green" onclick="dashboardFilter('inventory','status','OK')">
+          <div class="stat-icon">✅</div><div class="stat-label">Operational</div>
+          <div class="stat-value" id="stat-ok">0</div><div class="stat-sub">Status: OK</div>
         </div>
-        <div class="stat-card red" style="cursor:pointer" onclick="dashboardFilter('inventory','status','Need Repair')">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-label">Need Attention</div>
-          <div class="stat-value" id="stat-issues">0</div>
-          <div class="stat-sub">Repair / Check needed</div>
+        <div class="stat-card red" onclick="dashboardFilter('inventory','status','Need Repair')">
+          <div class="stat-icon">⚠️</div><div class="stat-label">Need Attention</div>
+          <div class="stat-value" id="stat-issues">0</div><div class="stat-sub">Repair / Check needed</div>
         </div>
-        <div class="stat-card yellow" style="cursor:pointer" onclick="dashboardFilter('maintenance','status','Pending')">
-          <div class="stat-icon">🔧</div>
-          <div class="stat-label">Work Orders</div>
-          <div class="stat-value" id="stat-wo">0</div>
-          <div class="stat-sub">Total maintenance jobs</div>
+        <div class="stat-card yellow" onclick="dashboardFilter('maintenance','status','Pending')">
+          <div class="stat-icon">🔧</div><div class="stat-label">Open Work Orders</div>
+          <div class="stat-value" id="stat-wo">0</div><div class="stat-sub">Pending / In Progress</div>
         </div>
       </div>
-
       <div class="charts-row">
-        <div class="chart-card">
-          <div class="chart-title">Device Status Breakdown</div>
-          <div class="bar-chart" id="status-chart"></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Devices by Location</div>
-          <div class="bar-chart" id="location-chart"></div>
-        </div>
+        <div class="chart-card"><div class="chart-title">Device Status</div><div class="bar-chart" id="status-chart"></div></div>
+        <div class="chart-card"><div class="chart-title">By Location</div><div class="bar-chart" id="location-chart"></div></div>
       </div>
-
       <div class="charts-row">
-        <div class="chart-card">
-          <div class="chart-title">Device Types</div>
-          <div class="bar-chart" id="type-chart"></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Recent Maintenance Jobs</div>
-          <div id="recent-jobs"></div>
-        </div>
+        <div class="chart-card"><div class="chart-title">Device Types</div><div class="bar-chart" id="type-chart"></div></div>
+        <div class="chart-card"><div class="chart-title">Recent Maintenance</div><div id="recent-jobs"></div></div>
+      </div>
+      <div id="warranty-alert-box" style="display:none;background:rgba(245,158,11,.08);border:1px solid var(--yellow);border-radius:10px;padding:16px 20px;margin-top:4px">
+        <div style="font-size:13px;font-weight:600;color:var(--yellow);margin-bottom:10px">⚠️ Warranty Alerts</div>
+        <div id="warranty-alert-list"></div>
       </div>
     </div>
 
-    <!-- INVENTORY PAGE -->
+    <!-- INVENTORY -->
     <div class="page" id="page-inventory">
       <div class="table-card">
         <div class="table-header">
-          <div class="table-title">All Inventory <span id="inv-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+          <div class="table-title">Inventory <span id="inv-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
-            <input class="search-input" placeholder="🔍  Search item, code, person..." id="inv-search" oninput="renderInventory()">
+            <input class="search-input" placeholder="🔍 Search..." id="inv-search" oninput="renderInventory()">
             <select class="filter-select" id="inv-filter-dept" onchange="renderInventory()">
               <option value="">All Departments</option>
-              <option>IT</option>
-              <option>Air Conditioner</option>
-              <option>Electrical</option>
-              <option>Civil</option>
-            </select>
-            <select class="filter-select" id="inv-filter-type" onchange="renderInventory()">
-              <option value="">All Types</option>
-              <option>Dell CPU</option>
-              <option>Dell Monitor</option>
-              <option>Acer Monitor</option>
-              <option>Laptop</option>
-              <option>Printer</option>
-              <option>Air Conditioner Unit</option>
-              <option>Electrical Component</option>
-              <option>Civil / Building Item</option>
+              <option>IT</option><option>Air Conditioner</option><option>Electrical</option><option>Civil</option>
             </select>
             <select class="filter-select" id="inv-filter-status" onchange="renderInventory()">
               <option value="">All Status</option>
-              <option>OK</option>
-              <option>Need Repair</option>
-              <option>Need to check</option>
-              <option>Severe blur</option>
-            </select>
-            <select class="filter-select" id="inv-filter-loc" onchange="renderInventory()">
-              <option value="">All Locations</option>
-              <option>Admin Office</option>
-              <option>ICT Room</option>
-              <option>First Aid</option>
+              <option>OK</option><option>Need Repair</option><option>Need to check</option><option>Severe blur</option>
             </select>
             <select class="filter-select" id="inv-filter-warranty" onchange="renderInventory()">
               <option value="">All Warranty</option>
-              <option value="expiring">Expiring Soon (30 days)</option>
-              <option value="expired">Expired</option>
+              <option value="expiring">Expiring Soon</option><option value="expired">Expired</option>
             </select>
           </div>
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Dept</th>
-                <th>Code</th>
-                <th>Item</th>
-                <th>Owned By</th>
-                <th>Location</th>
-                <th id="inv-th-1">Processor</th>
-                <th id="inv-th-3">Storage</th>
-                <th id="inv-th-4">RAM</th>
-                <th>Warranty</th>
-                <th>Status</th>
-                <th>Remark</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>#</th><th>Dept</th><th>Code</th><th>Item</th><th>Assigned To</th>
+              <th>Location</th><th>Detail 1</th><th>Detail 2</th><th>Warranty</th><th>Status</th><th>Remark</th><th>Actions</th>
+            </tr></thead>
             <tbody id="inv-tbody"></tbody>
           </table>
         </div>
-        <div class="table-pagination">
-          <span id="inv-page-info"></span>
-          <div class="pagination-btns" id="inv-pagination"></div>
-        </div>
+        <div class="table-pagination"><span id="inv-page-info"></span><div class="pagination-btns" id="inv-pagination"></div></div>
       </div>
     </div>
 
-    <!-- MAINTENANCE PAGE -->
+    <!-- MAINTENANCE -->
     <div class="page" id="page-maintenance">
       <div class="table-card">
         <div class="table-header">
           <div class="table-title">Maintenance Log <span id="maint-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
-            <input class="search-input" placeholder="🔍  Search WO, device, issue..." id="maint-search" oninput="renderMaintenance()">
+            <input class="search-input" placeholder="🔍 Search WO, device..." id="maint-search" oninput="renderMaintenance()">
             <select class="filter-select" id="maint-filter-dept" onchange="renderMaintenance()">
               <option value="">All Departments</option>
-              <option>IT</option>
-              <option>Air Conditioner</option>
-              <option>Electrical</option>
-              <option>Civil</option>
+              <option>IT</option><option>Air Conditioner</option><option>Electrical</option><option>Civil</option>
             </select>
             <select class="filter-select" id="maint-filter-status" onchange="renderMaintenance()">
               <option value="">All Status</option>
-              <option>Completed</option>
-              <option>Pending</option>
-              <option>In Progress</option>
+              <option>Completed</option><option>Pending</option><option>In Progress</option>
             </select>
           </div>
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Dept</th>
-                <th>Work Order</th>
-                <th>Date Checked</th>
-                <th>Device Code</th>
-                <th>Device</th>
-                <th>Issue</th>
-                <th>Findings</th>
-                <th>Recommendation</th>
-                <th>Status</th>
-                <th>Date Completed</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Dept</th><th>Work Order</th><th>Date</th><th>Device</th><th>Issue</th>
+              <th>Findings</th><th>Recommendation</th><th>Status</th><th>Completed</th><th>Photos</th><th>Actions</th>
+            </tr></thead>
             <tbody id="maint-tbody"></tbody>
           </table>
         </div>
-        <div class="table-pagination">
-          <span id="maint-page-info"></span>
-          <div class="pagination-btns" id="maint-pagination"></div>
-        </div>
+        <div class="table-pagination"><span id="maint-page-info"></span><div class="pagination-btns" id="maint-pagination"></div></div>
       </div>
     </div>
 
-    <!-- TRANSFER PAGE -->
+    <!-- TRANSFER -->
     <div class="page" id="page-transfer">
       <div class="table-card">
         <div class="table-header">
-          <div class="table-title">Item Transfer Log <span id="trans-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+          <div class="table-title">Item Transfer <span id="trans-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
-            <input class="search-input" placeholder="🔍  Search code, location..." id="trans-search" oninput="renderTransfer()">
+            <input class="search-input" placeholder="🔍 Search code, location..." id="trans-search" oninput="renderTransfer()">
             <select class="filter-select" id="trans-filter-dept" onchange="renderTransfer()">
               <option value="">All Departments</option>
-              <option>IT</option>
-              <option>Air Conditioner</option>
-              <option>Electrical</option>
-              <option>Civil</option>
+              <option>IT</option><option>Air Conditioner</option><option>Electrical</option><option>Civil</option>
             </select>
           </div>
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Dept</th>
-                <th>Transfer Date</th>
-                <th>Item Code</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Person in Charge</th>
-                <th>Reason / Purpose</th>
-                <th>Authorized By</th>
-                <th>Remark</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>#</th><th>Dept</th><th>Date</th><th>Item Code</th><th>From</th><th>To</th>
+              <th>Person</th><th>Reason</th><th>Auth By</th><th>Remark</th><th>Actions</th>
+            </tr></thead>
             <tbody id="trans-tbody"></tbody>
           </table>
         </div>
-        <div class="table-pagination">
-          <span id="trans-page-info"></span>
-          <div class="pagination-btns" id="trans-pagination"></div>
-        </div>
+        <div class="table-pagination"><span id="trans-page-info"></span><div class="pagination-btns" id="trans-pagination"></div></div>
       </div>
     </div>
 
-    <!-- SOFTWARE LIBRARY PAGE -->
+    <!-- SOFTWARE -->
     <div class="page" id="page-software">
       <div class="table-card">
         <div class="table-header">
           <div class="table-title">Software Library <span id="soft-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
           <div class="table-controls">
-            <input class="search-input" placeholder="🔍  Search software or device code..." id="soft-search" oninput="renderSoftware()">
-            <select class="filter-select" id="soft-filter-category" onchange="renderSoftware()">
+            <input class="search-input" placeholder="🔍 Search software..." id="soft-search" oninput="renderSoftware()">
+            <select class="filter-select" id="soft-filter-cat" onchange="renderSoftware()">
               <option value="">All Categories</option>
-              <option>Operating System</option>
-              <option>Office & Productivity</option>
-              <option>Security</option>
-              <option>Utility</option>
-              <option>Driver</option>
-              <option>Other</option>
+              <option>Operating System</option><option>Office & Productivity</option>
+              <option>Security</option><option>Utility</option><option>Driver</option><option>Other</option>
             </select>
           </div>
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Software</th>
-                <th>Category</th>
-                <th>Version</th>
-                <th>License Key</th>
-                <th>Source</th>
-                <th>Notes</th>
-                <th>Download</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Software</th><th>Category</th><th>Version</th><th>License Key</th>
+              <th>Source</th><th>Notes</th><th>Download</th><th class="admin-only">Actions</th>
+            </tr></thead>
             <tbody id="soft-tbody"></tbody>
           </table>
         </div>
-        <div class="table-pagination">
-          <span id="soft-page-info"></span>
-          <div class="pagination-btns" id="soft-pagination"></div>
+        <div class="table-pagination"><span id="soft-page-info"></span><div class="pagination-btns" id="soft-pagination"></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS (admin only) -->
+    <div class="page admin-only" id="page-settings">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px">
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">🔗 Google Sheets Connection</div></div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+            <div class="form-group">
+              <label class="form-label">Apps Script URL</label>
+              <input class="form-input" id="set-url" placeholder="https://script.google.com/...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Secret Key</label>
+              <input class="form-input" type="password" id="set-key" placeholder="Your secret key">
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">Save Connection</button>
+            <div style="font-size:11px;color:var(--text2)">These are saved in your browser only — not visible in the source code.</div>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">👤 Change My Password</div></div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input class="form-input" type="password" id="set-cur-pass" placeholder="Current password">
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input class="form-input" type="password" id="set-new-pass" placeholder="New password">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input class="form-input" type="password" id="set-conf-pass" placeholder="Confirm new password">
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+        <div class="table-card" style="grid-column:1/-1">
+          <div class="table-header"><div class="table-title">📊 Data Management</div></div>
+          <div style="padding:20px;display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-secondary" onclick="initialPushToSheets()">⬆️ Push All Data to Sheets</button>
+            <button class="btn btn-secondary" onclick="syncFromSheets()">🔄 Pull Data from Sheets</button>
+          </div>
+          <div style="padding:0 20px 16px;font-size:12px;color:var(--text2)">Use "Push" once after initial setup. Use "Sync" to refresh data on any device.</div>
         </div>
       </div>
     </div>
 
-  </div>
+  </div><!-- end content -->
 </main>
 
 <!-- MODALS -->
+
 <!-- Inventory Modal -->
 <div class="modal-overlay" id="modal-inventory">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="inv-modal-title">Add Inventory Item</h3>
-      <button class="modal-close" onclick="closeModal('modal-inventory')">✕</button>
-    </div>
+    <div class="modal-head"><h3 id="inv-modal-title">Add Inventory Item</h3><button class="modal-close" onclick="closeModal('modal-inventory')">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="inv-edit-id">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Department *</label>
           <select class="form-select" id="inv-dept" onchange="onInvDeptChange()">
-            <option>IT</option>
-            <option>Air Conditioner</option>
-            <option>Electrical</option>
-            <option>Civil</option>
+            <option>IT</option><option>Air Conditioner</option><option>Electrical</option><option>Civil</option>
           </select>
         </div>
         <div class="form-group">
@@ -607,19 +426,13 @@
         <div class="form-group">
           <label class="form-label">Item Type *</label>
           <select class="form-select" id="inv-item">
-            <option>Dell CPU</option>
-            <option>Dell Monitor</option>
-            <option>Acer Monitor</option>
-            <option>Laptop</option>
-            <option>Printer</option>
-            <option>Air Conditioner Unit</option>
-            <option>Electrical Component</option>
-            <option>Civil / Building Item</option>
-            <option>Other</option>
+            <option>Dell CPU</option><option>Dell Monitor</option><option>Acer Monitor</option>
+            <option>Laptop</option><option>Printer</option><option>Air Conditioner Unit</option>
+            <option>Electrical Component</option><option>Civil / Building Item</option><option>Other</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Owned By / Assigned To</label>
+          <label class="form-label">Assigned To / Owner</label>
           <input class="form-input" id="inv-owner" placeholder="e.g. ICT-32 or Staff Name">
         </div>
       </div>
@@ -627,11 +440,8 @@
         <div class="form-group">
           <label class="form-label">Location *</label>
           <select class="form-select" id="inv-location">
-            <option>Admin Office</option>
-            <option>ICT Room</option>
-            <option>First Aid</option>
-            <option>Store</option>
-            <option>Branch 2</option>
+            <option>Admin Office</option><option>ICT Room</option><option>First Aid</option>
+            <option>Store</option><option>Branch 2</option><option>Other</option>
           </select>
         </div>
         <div class="form-group">
@@ -640,34 +450,31 @@
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group" id="inv-grp-1">
           <label class="form-label" id="inv-label-1">Processor</label>
-          <input class="form-input" id="inv-desc1" placeholder="e.g. Intel Core i5-14400">
+          <input class="form-input" id="inv-desc1" placeholder="">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="inv-grp-2">
           <label class="form-label" id="inv-label-2">Model</label>
-          <input class="form-input" id="inv-desc2" placeholder="e.g. Optiplex 380">
+          <input class="form-input" id="inv-desc2" placeholder="">
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group" id="inv-grp-3">
           <label class="form-label" id="inv-label-3">Storage</label>
-          <input class="form-input" id="inv-desc3" placeholder="e.g. Patriot SSD 256GB">
+          <input class="form-input" id="inv-desc3" placeholder="">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="inv-grp-4">
           <label class="form-label" id="inv-label-4">RAM</label>
-          <input class="form-input" id="inv-desc4" placeholder="e.g. 8GB DDR4">
+          <input class="form-input" id="inv-desc4" placeholder="">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Status *</label>
           <select class="form-select" id="inv-status">
-            <option>OK</option>
-            <option>Need Repair</option>
-            <option>Need to check</option>
-            <option>Severe blur</option>
-            <option>Decommissioned</option>
+            <option>OK</option><option>Need Repair</option><option>Need to check</option>
+            <option>Severe blur</option><option>Decommissioned</option>
           </select>
         </div>
         <div class="form-group">
@@ -686,25 +493,19 @@
 <!-- Maintenance Modal -->
 <div class="modal-overlay" id="modal-maintenance">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="maint-modal-title">Add Work Order</h3>
-      <button class="modal-close" onclick="closeModal('modal-maintenance')">✕</button>
-    </div>
+    <div class="modal-head"><h3 id="maint-modal-title">Add Work Order</h3><button class="modal-close" onclick="closeModal('modal-maintenance')">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="maint-edit-id">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Department *</label>
           <select class="form-select" id="maint-dept">
-            <option>IT</option>
-            <option>Air Conditioner</option>
-            <option>Electrical</option>
-            <option>Civil</option>
+            <option>IT</option><option>Air Conditioner</option><option>Electrical</option><option>Civil</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Work Order No *</label>
-          <input class="form-input" id="maint-wo" placeholder="e.g. CM0049">
+          <input class="form-input" id="maint-wo" placeholder="e.g. CM0050">
         </div>
       </div>
       <div class="form-row">
@@ -713,11 +514,17 @@
           <input class="form-input" type="date" id="maint-date">
         </div>
         <div class="form-group">
-          <label class="form-label">Device Code *</label>
-          <input class="form-input" id="maint-device" placeholder="e.g. AFS/SA/PC/001">
+          <label class="form-label">Status *</label>
+          <select class="form-select" id="maint-status">
+            <option>Pending</option><option>In Progress</option><option>Completed</option>
+          </select>
         </div>
       </div>
       <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Device Code *</label>
+          <input class="form-input" id="maint-device" placeholder="e.g. AFS/SA/PC/001" onblur="autofillDevice()">
+        </div>
         <div class="form-group">
           <label class="form-label">Device Description</label>
           <input class="form-input" id="maint-desc" placeholder="e.g. Dell CPU">
@@ -732,7 +539,7 @@
       <div class="form-row full">
         <div class="form-group">
           <label class="form-label">Findings</label>
-          <textarea class="form-textarea" id="maint-findings" placeholder="What was found during inspection..."></textarea>
+          <textarea class="form-textarea" id="maint-findings" placeholder="What was found..."></textarea>
         </div>
       </div>
       <div class="form-row full">
@@ -743,16 +550,34 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Status *</label>
-          <select class="form-select" id="maint-status">
-            <option>Completed</option>
-            <option>In Progress</option>
-            <option>Pending</option>
-          </select>
-        </div>
-        <div class="form-group">
           <label class="form-label">Date Completed</label>
           <input class="form-input" type="date" id="maint-complete">
+        </div>
+      </div>
+      <!-- PHOTOS -->
+      <div style="margin-top:4px">
+        <div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;text-transform:uppercase;letter-spacing:.8px">📷 Photos</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Before Photo</label>
+            <div class="photo-upload-area" onclick="document.getElementById('photo-before-input').click()">
+              <div id="photo-before-preview" style="display:none"><img id="photo-before-thumb" class="photo-thumb"></div>
+              <div id="photo-before-placeholder">📷 Click to upload<br><span style="font-size:11px;color:var(--text2)">Photo before maintenance</span></div>
+              <div id="photo-before-uploading" style="display:none;font-size:12px;color:var(--text2)">Uploading...</div>
+            </div>
+            <input type="file" id="photo-before-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'before')">
+            <input type="hidden" id="maint-photo-before">
+          </div>
+          <div class="form-group">
+            <label class="form-label">After Photo</label>
+            <div class="photo-upload-area" onclick="document.getElementById('photo-after-input').click()">
+              <div id="photo-after-preview" style="display:none"><img id="photo-after-thumb" class="photo-thumb"></div>
+              <div id="photo-after-placeholder">📷 Click to upload<br><span style="font-size:11px;color:var(--text2)">Photo after maintenance</span></div>
+              <div id="photo-after-uploading" style="display:none;font-size:12px;color:var(--text2)">Uploading...</div>
+            </div>
+            <input type="file" id="photo-after-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'after')">
+            <input type="hidden" id="maint-photo-after">
+          </div>
         </div>
       </div>
     </div>
@@ -766,20 +591,14 @@
 <!-- Transfer Modal -->
 <div class="modal-overlay" id="modal-transfer">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="trans-modal-title">Add Transfer Record</h3>
-      <button class="modal-close" onclick="closeModal('modal-transfer')">✕</button>
-    </div>
+    <div class="modal-head"><h3 id="trans-modal-title">Add Transfer Record</h3><button class="modal-close" onclick="closeModal('modal-transfer')">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="trans-edit-id">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Department *</label>
           <select class="form-select" id="trans-dept">
-            <option>IT</option>
-            <option>Air Conditioner</option>
-            <option>Electrical</option>
-            <option>Civil</option>
+            <option>IT</option><option>Air Conditioner</option><option>Electrical</option><option>Civil</option>
           </select>
         </div>
         <div class="form-group">
@@ -802,15 +621,15 @@
           <label class="form-label">Transfer To *</label>
           <input class="form-input" id="trans-to" placeholder="e.g. Admin Office">
         </div>
-      </div>
-      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Person in Charge</label>
           <input class="form-input" id="trans-pic" placeholder="e.g. Hafiz">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Authorized By</label>
-          <input class="form-input" id="trans-auth" placeholder="e.g. Hafiz">
+          <input class="form-input" id="trans-auth">
         </div>
       </div>
       <div class="form-row full">
@@ -822,7 +641,7 @@
       <div class="form-row full">
         <div class="form-group">
           <label class="form-label">Remark</label>
-          <input class="form-input" id="trans-remark" placeholder="Optional notes">
+          <input class="form-input" id="trans-remark" placeholder="Optional">
         </div>
       </div>
     </div>
@@ -836,10 +655,7 @@
 <!-- Software Modal -->
 <div class="modal-overlay" id="modal-software">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="soft-modal-title">Add Software</h3>
-      <button class="modal-close" onclick="closeModal('modal-software')">✕</button>
-    </div>
+    <div class="modal-head"><h3 id="soft-modal-title">Add Software</h3><button class="modal-close" onclick="closeModal('modal-software')">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="soft-edit-id">
       <div class="form-row">
@@ -850,31 +666,26 @@
         <div class="form-group">
           <label class="form-label">Category *</label>
           <select class="form-select" id="soft-category">
-            <option>Operating System</option>
-            <option>Office & Productivity</option>
-            <option>Security</option>
-            <option>Utility</option>
-            <option>Driver</option>
-            <option>Other</option>
+            <option>Operating System</option><option>Office & Productivity</option>
+            <option>Security</option><option>Utility</option><option>Driver</option><option>Other</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Version</label>
-          <input class="form-input" id="soft-version" placeholder="e.g. 8.6 / 2019 / 22H2">
+          <input class="form-input" id="soft-version" placeholder="e.g. 8.6">
         </div>
         <div class="form-group">
           <label class="form-label">License Key</label>
-          <input class="form-input" id="soft-license" placeholder="Leave blank if not applicable">
+          <input class="form-input" id="soft-license" placeholder="Leave blank if N/A">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Source *</label>
           <select class="form-select" id="soft-source">
-            <option>Google Drive</option>
-            <option>Direct Link (vendor site)</option>
+            <option>Google Drive</option><option>Direct Link (vendor site)</option>
           </select>
         </div>
         <div class="form-group">
@@ -885,7 +696,7 @@
       <div class="form-row full">
         <div class="form-group">
           <label class="form-label">Notes</label>
-          <textarea class="form-textarea" id="soft-notes" placeholder="Install instructions, which devices use this, etc."></textarea>
+          <textarea class="form-textarea" id="soft-notes" placeholder="Install instructions, device codes, etc."></textarea>
         </div>
       </div>
     </div>
@@ -896,16 +707,21 @@
   </div>
 </div>
 
+<!-- Photo Viewer Modal -->
+<div class="modal-overlay" id="modal-photo">
+  <div class="modal" style="width:auto;max-width:90vw;background:transparent;border:none">
+    <div style="text-align:right;margin-bottom:8px">
+      <button class="btn btn-secondary" onclick="closeModal('modal-photo')">✕ Close</button>
+    </div>
+    <img id="photo-viewer-img" style="max-width:85vw;max-height:80vh;border-radius:8px;display:block">
+  </div>
+</div>
+
 <!-- Confirm Delete -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal" style="width:380px">
-    <div class="modal-head">
-      <h3>Confirm Delete</h3>
-      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="color:var(--text2);font-size:14px">Are you sure you want to delete this record? This action cannot be undone.</p>
-    </div>
+    <div class="modal-head"><h3>Confirm Delete</h3><button class="modal-close" onclick="closeModal('modal-confirm')">✕</button></div>
+    <div class="modal-body"><p style="color:var(--text2);font-size:14px">Are you sure you want to delete this record? This cannot be undone.</p></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">Cancel</button>
       <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
@@ -913,19 +729,22 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// DATA - Pre-loaded from your Excel file
-// ============================================================
-function excelDateToString(serial) {
-  if (!serial || isNaN(serial)) return serial || '';
-  const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-  return date.toISOString().split('T')[0];
-}
+// ==============================================================
+// CONFIGURATION — stored in localStorage (not in source code!)
+// ==============================================================
+// On first use, go to Settings page and enter these values.
+// They are saved in YOUR browser only, invisible in page source.
+const SHEETS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbySa1FiVPDDtBpR689pZlL_AlVOpeqtvn94l6fMeDAnhrvSG3xMN4LI_A1uo1u8YPym/exec";
+function getSheetsURL() { return localStorage.getItem('afs_url') || SHEETS_URL_DEFAULT; }
+function getSheetsKey() { return localStorage.getItem('afs_key') || ''; }
+function isSheetsConnected() { return getSheetsURL() && getSheetsKey(); }
 
+// ==============================================================
+// SEED DATA
+// ==============================================================
 let inventory = [
   {id:1, no:1, owner:'Printer PC 1', code:'AFS/SA/PC/001', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Patriot SSD 256GB + WD HDD 300GB', desc4:'6GB DDR3', desc5:'Onboard', status:'OK', remark:''},
   {id:2, no:2, owner:'Printer PC 2', code:'AFS/SA/PC/002', location:'Admin Office', item:'Dell CPU', desc1:'Intel Core 2 Duo', desc2:'Optiplex 380', desc3:'Patriot SSD 256GB + WD HDD 500GB', desc4:'6GB DDR3', desc5:'Onboard', status:'OK', remark:''},
@@ -1083,917 +902,917 @@ let software = [
   {id:4, name:'Windows 10 Pro', category:'Operating System', version:'22H2', license:'XXXX-XXXX-XXXX', source:'Google Drive', link:'https://drive.google.com/your-folder-link', notes:'Use for ICT Room upgrades from Windows 7.'},
 ];
 
-// State
-let currentPage = 'dashboard';
-let invPage = 1, maintPage = 1, transPage = 1, softPage = 1;
-const PER_PAGE = 15;
-let deleteTarget = null;
-let nextInvId = 80, nextMaintId = 50, nextTransId = 13, nextSoftId = 5;
-let globalDept = ''; // '' = All Departments, otherwise 'IT'/'Air Conditioner'/'Electrical'/'Civil'
 
-// All existing seed data above predates the multi-department feature,
-// so it's tagged IT by default here in one place rather than editing
-// every record line above.
-inventory.forEach(i => { if (!i.dept) i.dept = 'IT'; if (i.warranty === undefined) i.warranty = ''; });
-maintenance.forEach(m => { if (!m.dept) m.dept = 'IT'; });
-transfers.forEach(t => { if (!t.dept) t.dept = 'IT'; });
+// Tag all seed data with IT dept and empty warranty/photos
+inventory.forEach(i => { if(!i.dept) i.dept='IT'; if(!i.warranty) i.warranty=''; });
+maintenance.forEach(m => { if(!m.dept) m.dept='IT'; if(!m.photoBefore) m.photoBefore=''; if(!m.photoAfter) m.photoAfter=''; });
+transfers.forEach(t => { if(!t.dept) t.dept='IT'; });
 
-// Field labels per department for the 4 generic desc slots in Inventory
-const DEPT_FIELD_LABELS = {
-  'IT':                ['Processor', 'Model', 'Storage', 'RAM'],
-  'Air Conditioner':   ['Brand/Model', 'BTU/Capacity', 'Type (Split/Window/Cassette)', 'Refrigerant Type'],
-  'Electrical':        ['Type (Wiring/Panel/Socket/Lighting)', 'Location/Circuit', 'Capacity (Amp/Voltage)', ''],
-  'Civil':             ['Type (Door/Window/Roof/Plumbing)', 'Material', 'Building/Block Area', ''],
+// ==============================================================
+// STATE
+// ==============================================================
+let currentPage='dashboard', globalDept='', currentUser=null, currentRole='staff';
+let invPage=1, maintPage=1, transPage=1, softPage=1;
+const PER_PAGE=15;
+let deleteTarget=null;
+let nextInvId=80, nextMaintId=50, nextTransId=13, nextSoftId=5;
+
+const DEPT_FIELDS = {
+  'IT':               ['Processor','Model','Storage','RAM'],
+  'Air Conditioner':  ['Brand/Model','BTU/Capacity','Type (Split/Window/Cassette)','Refrigerant Type'],
+  'Electrical':       ['Type (Wiring/Panel/Socket/Lighting)','Location/Circuit','Capacity (Amp/Voltage)',''],
+  'Civil':            ['Type (Door/Window/Roof/Plumbing)','Material','Building/Block Area',''],
 };
 
-function onInvDeptChange() {
-  const dept = document.getElementById('inv-dept').value;
-  const labels = DEPT_FIELD_LABELS[dept] || DEPT_FIELD_LABELS['IT'];
-  [1,2,3,4].forEach(n => {
-    const labelEl = document.getElementById('inv-label-' + n);
-    const inputEl = document.getElementById('inv-desc' + n);
-    const text = labels[n-1];
-    labelEl.textContent = text || 'Notes';
-    inputEl.closest('.form-group').style.display = text ? '' : 'none';
+// ==============================================================
+// LOGIN — via Google Sheets Users tab
+// ==============================================================
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (!u || !p) { showLoginError('Please enter username and password'); return; }
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('login-loading').style.display='block';
+  if (!isSheetsConnected()) {
+    // Fallback: if Sheets not connected yet, accept any non-empty credentials as admin for setup
+    document.getElementById('login-loading').style.display='none';
+    showLoginError('Google Sheets not connected. Go to Settings after setup.');
+    // Allow setup login with hardcoded default so admin can reach Settings
+    if (u==='admin' && p==='admin123') { loginSuccess(u,'admin'); }
+    return;
+  }
+  try {
+    const res = await fetch(`${getSheetsURL()}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}&key=${getSheetsKey()}`).then(r=>r.json());
+    document.getElementById('login-loading').style.display='none';
+    if (res.success) {
+      sessionStorage.setItem('afs_user', JSON.stringify({username:res.username, role:res.role}));
+      loginSuccess(res.username, res.role);
+    } else {
+      showLoginError('Incorrect username or password');
+    }
+  } catch(e) {
+    document.getElementById('login-loading').style.display='none';
+    showLoginError('Cannot reach server. Check your connection.');
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function loginSuccess(username, role) {
+  currentUser = username;
+  currentRole = role;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('sidebar-user').textContent = username;
+  document.getElementById('sidebar-role-badge').innerHTML = `<span class="role-badge-${role}">${role}</span>`;
+  applyRoleUI();
+  init();
+}
+
+function applyRoleUI() {
+  // Hide admin-only elements for staff
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = currentRole==='admin' ? '' : 'none';
   });
+}
+
+function doLogout() {
+  sessionStorage.removeItem('afs_user');
+  location.reload();
+}
+
+// ==============================================================
+// NAVIGATION
+// ==============================================================
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+page);
+  if (pageEl) pageEl.classList.add('active');
+  const titles = {
+    dashboard:['Dashboard','Overview of AFS IT assets and maintenance'],
+    inventory:['Inventory','All IT assets across both branches'],
+    maintenance:['Maintenance Log','Work orders and maintenance history'],
+    transfer:['Item Transfer','Track item movements between locations'],
+    software:['Software Library','Installers, licenses and download links'],
+    settings:['Settings','Connection and account settings'],
+  };
+  document.getElementById('page-title').textContent = titles[page]?.[0]||page;
+  document.getElementById('page-sub').textContent = titles[page]?.[1]||'';
+  const addBtn = document.getElementById('add-btn');
+  addBtn.style.display = (page==='dashboard'||page==='settings') ? 'none' : 'block';
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const txt = n.textContent.toLowerCase();
+    if ((page==='dashboard'&&txt.includes('dashboard'))||(page==='inventory'&&txt.includes('inventory'))||
+        (page==='maintenance'&&txt.includes('maintenance'))||(page==='transfer'&&txt.includes('transfer'))||
+        (page==='software'&&txt.includes('software'))||(page==='settings'&&txt.includes('settings'))) n.classList.add('active');
+  });
+  if (page==='dashboard') renderDashboard();
+  else if (page==='inventory') { invPage=1; renderInventory(); }
+  else if (page==='maintenance') { maintPage=1; renderMaintenance(); }
+  else if (page==='transfer') { transPage=1; renderTransfer(); }
+  else if (page==='software') { softPage=1; renderSoftware(); }
+  else if (page==='settings') loadSettings();
 }
 
 function onDeptFilterChange() {
   globalDept = document.getElementById('dept-filter').value;
-  if (currentPage === 'dashboard') renderDashboard();
-  else if (currentPage === 'inventory') { invPage = 1; renderInventory(); }
-  else if (currentPage === 'maintenance') { maintPage = 1; renderMaintenance(); }
-  else if (currentPage === 'transfer') { transPage = 1; renderTransfer(); }
+  if (currentPage==='dashboard') renderDashboard();
+  else if (currentPage==='inventory') { invPage=1; renderInventory(); }
+  else if (currentPage==='maintenance') { maintPage=1; renderMaintenance(); }
+  else if (currentPage==='transfer') { transPage=1; renderTransfer(); }
 }
 
-// Warranty helpers
-function warrantyInfo(dateStr) {
-  if (!dateStr) return { label: '—', cls: '' };
-  const today = new Date(); today.setHours(0,0,0,0);
-  const exp = new Date(dateStr);
-  const diffDays = Math.round((exp - today) / 86400000);
-  if (diffDays < 0) return { label: `Expired (${dateStr})`, cls: 'badge-repair' };
-  if (diffDays <= 30) return { label: `${dateStr} (${diffDays}d left)`, cls: 'badge-check' };
-  return { label: dateStr, cls: 'badge-ok' };
-}
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-function showPage(page) {
-  currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => {
-    if (n.textContent.toLowerCase().includes(page === 'maintenance' ? 'maintenance' : page === 'transfer' ? 'transfer' : page)) {
-      n.classList.add('active');
-    }
-  });
-  const titles = {
-    dashboard: ['Dashboard', 'Overview of AFS IT assets and maintenance'],
-    inventory: ['Inventory', 'All IT assets across both branches'],
-    maintenance: ['Maintenance Log', 'Work orders and maintenance history'],
-    transfer: ['Item Transfer', 'Track item movements between locations'],
-    software: ['Software Library', 'Installers, licenses, and download links'],
-  };
-  document.getElementById('page-title').textContent = titles[page][0];
-  document.getElementById('page-sub').textContent = titles[page][1];
-  document.getElementById('add-btn').style.display = page === 'dashboard' ? 'none' : 'block';
-  if (page === 'dashboard') renderDashboard();
-  else if (page === 'inventory') { invPage = 1; renderInventory(); }
-  else if (page === 'maintenance') { maintPage = 1; renderMaintenance(); }
-  else if (page === 'transfer') { transPage = 1; renderTransfer(); }
-  else if (page === 'software') { softPage = 1; renderSoftware(); }
-}
-
-// Click-through filters from Dashboard into list pages
 function dashboardFilter(page, field, value) {
   showPage(page);
-  if (page === 'inventory') {
-    document.getElementById('inv-search').value = '';
-    document.getElementById('inv-filter-type').value = field === 'item' ? value : '';
-    document.getElementById('inv-filter-status').value = field === 'status' ? value : '';
-    document.getElementById('inv-filter-loc').value = field === 'location' ? value : '';
-    invPage = 1; renderInventory();
-  } else if (page === 'maintenance') {
-    document.getElementById('maint-search').value = '';
-    document.getElementById('maint-filter-status').value = field === 'status' ? value : '';
-    maintPage = 1; renderMaintenance();
+  if (page==='inventory') {
+    document.getElementById('inv-search').value='';
+    document.getElementById('inv-filter-dept').value=field==='dept'?value:'';
+    document.getElementById('inv-filter-status').value=field==='status'?value:'';
+    document.getElementById('inv-filter-warranty').value='';
+    invPage=1; renderInventory();
+  } else if (page==='maintenance') {
+    document.getElementById('maint-search').value='';
+    document.getElementById('maint-filter-dept').value='';
+    document.getElementById('maint-filter-status').value=field==='status'?value:'';
+    maintPage=1; renderMaintenance();
   }
 }
 
-// Jump to Software Library and search by device code — finds software
-// whose Notes mention this device (since installs are logged by device
-// code, e.g. "Used on AFS/SA/PC/012 and ICT Room PCs").
-function viewSoftwareForDevice(deviceCode) {
-  showPage('software');
-  document.getElementById('soft-search').value = deviceCode;
-  document.getElementById('soft-filter-category').value = '';
-  softPage = 1;
-  renderSoftware();
-  const matches = software.filter(s => (s.notes||'').toLowerCase().includes(deviceCode.toLowerCase()));
-  if (matches.length === 0) {
-    showToast(`No software notes reference ${deviceCode} yet`, 'error');
-  }
-}
-
-// ============================================================
-// DASHBOARD
-// ============================================================
-function renderDashboard() {
-  const invData = globalDept ? inventory.filter(i => i.dept === globalDept) : inventory;
-  const maintData = globalDept ? maintenance.filter(m => m.dept === globalDept) : maintenance;
-  const total = invData.length;
-  const ok = invData.filter(i => i.status === 'OK').length;
-  const issues = invData.filter(i => i.status !== 'OK').length;
-  const wo = maintData.length;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-ok').textContent = ok;
-  document.getElementById('stat-issues').textContent = issues;
-  document.getElementById('stat-wo').textContent = wo;
-
-  // Status chart
-  const statusCounts = {};
-  invData.forEach(i => { statusCounts[i.status] = (statusCounts[i.status] || 0) + 1; });
-  const maxS = Math.max(...Object.values(statusCounts), 1);
-  const statusColors = { 'OK': '#22c55e', 'Need Repair': '#ef4444', 'Need to check': '#f59e0b', 'Severe blur': '#f97316' };
-  document.getElementById('status-chart').innerHTML = Object.keys(statusCounts).length === 0 ? `<div class="empty-state"><p>No data for this department</p></div>` : Object.entries(statusCounts).map(([k, v]) =>
-    `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','status','${k}')">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100)}%;background:${statusColors[k]||'#4f8ef7'}">${v}</div></div>
-      <div class="bar-count">${v}</div>
-    </div>`
-  ).join('');
-
-  // Location chart
-  const locCounts = {};
-  invData.forEach(i => { locCounts[i.location] = (locCounts[i.location] || 0) + 1; });
-  const maxL = Math.max(...Object.values(locCounts), 1);
-  const locColors = ['#4f8ef7','#7c5af7','#22c55e','#f59e0b'];
-  document.getElementById('location-chart').innerHTML = Object.keys(locCounts).length === 0 ? `<div class="empty-state"><p>No data for this department</p></div>` : Object.entries(locCounts).map(([k, v], i) =>
-    `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','location','${k}')">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxL*100)}%;background:${locColors[i%locColors.length]}">${v}</div></div>
-      <div class="bar-count">${v}</div>
-    </div>`
-  ).join('');
-
-  // Type chart
-  const typeCounts = {};
-  invData.forEach(i => { typeCounts[i.item] = (typeCounts[i.item] || 0) + 1; });
-  const maxT = Math.max(...Object.values(typeCounts), 1);
-  document.getElementById('type-chart').innerHTML = Object.keys(typeCounts).length === 0 ? `<div class="empty-state"><p>No data for this department</p></div>` : Object.entries(typeCounts).map(([k, v], i) =>
-    `<div class="bar-row" style="cursor:pointer" onclick="dashboardFilter('inventory','item','${k}')">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100)}%;background:#4f8ef7">${v}</div></div>
-      <div class="bar-count">${v}</div>
-    </div>`
-  ).join('');
-
-  // Recent jobs
-  const recent = [...maintData].slice(-6).reverse();
-  document.getElementById('recent-jobs').innerHTML = recent.length === 0 ? `<div class="empty-state"><p>No recent jobs for this department</p></div>` : recent.map(m =>
-    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-size:13px;font-weight:600">${m.wo} — ${m.device}</div>
-        <div style="font-size:12px;color:var(--text2)">${m.issue}</div>
-      </div>
-      ${statusBadge(m.status)}
-    </div>`
-  ).join('');
-}
-
-// ============================================================
+// ==============================================================
 // STATUS BADGE
-// ============================================================
-function statusBadge(status) {
-  const map = {
-    'OK': 'badge-ok', 'Need Repair': 'badge-repair', 'Need to check': 'badge-check',
-    'Completed': 'badge-completed', 'Pending': 'badge-pending', 'In Progress': 'badge-inprogress',
-    'Severe blur': 'badge-blur', 'Decommissioned': 'badge-check'
-  };
-  return `<span class="badge ${map[status]||'badge-check'}">${status}</span>`;
+// ==============================================================
+function statusBadge(s) {
+  const m={'OK':'badge-ok','Need Repair':'badge-repair','Need to check':'badge-check',
+    'Completed':'badge-completed','Pending':'badge-pending','In Progress':'badge-inprogress',
+    'Severe blur':'badge-blur','Decommissioned':'badge-check'};
+  return `<span class="badge ${m[s]||'badge-check'}">${s}</span>`;
 }
 
-// ============================================================
+function deptBadge(d) { return `<span class="badge badge-dept" style="font-size:10px">${d}</span>`; }
+
+// ==============================================================
+// WARRANTY
+// ==============================================================
+function warrantyDisplay(dateStr) {
+  if (!dateStr) return '<span style="color:var(--text2);font-size:12px">—</span>';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const exp=new Date(dateStr);
+  const diff=Math.round((exp-today)/86400000);
+  if (diff<0) return `<span class="warranty-exp">⛔ Expired<br>${dateStr}</span>`;
+  if (diff<=30) return `<span class="warranty-warn">⚠️ ${diff}d left<br>${dateStr}</span>`;
+  return `<span class="warranty-ok">✅ ${dateStr}</span>`;
+}
+
+// ==============================================================
+// DASHBOARD
+// ==============================================================
+function renderDashboard() {
+  const inv = globalDept ? inventory.filter(i=>i.dept===globalDept) : inventory;
+  const maint = globalDept ? maintenance.filter(m=>m.dept===globalDept) : maintenance;
+  const total=inv.length, ok=inv.filter(i=>i.status==='OK').length;
+  const issues=inv.filter(i=>i.status!=='OK').length;
+  const openWO=maint.filter(m=>m.status==='Pending'||m.status==='In Progress').length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-ok').textContent=ok;
+  document.getElementById('stat-issues').textContent=issues;
+  document.getElementById('stat-wo').textContent=openWO;
+
+  const barChart=(containerId, counts, colors, filterField) => {
+    const max=Math.max(...Object.values(counts),1);
+    const colorArr=colors||['#4f8ef7','#7c5af7','#22c55e','#f59e0b','#ef4444'];
+    document.getElementById(containerId).innerHTML = Object.keys(counts).length===0
+      ? '<div class="empty-state"><p>No data</p></div>'
+      : Object.entries(counts).map(([k,v],i)=>
+          `<div class="bar-row" onclick="dashboardFilter('inventory','${filterField}','${k}')">
+            <div class="bar-label">${k}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%;background:${typeof colors==='object'&&!Array.isArray(colors)?colors[k]||'#4f8ef7':colorArr[i%colorArr.length]}">${v}</div></div>
+            <div class="bar-count">${v}</div>
+          </div>`).join('');
+  };
+
+  const sc={'OK':'#22c55e','Need Repair':'#ef4444','Need to check':'#f59e0b','Severe blur':'#f97316'};
+  const statusCounts={}, locCounts={}, typeCounts={};
+  inv.forEach(i=>{
+    statusCounts[i.status]=(statusCounts[i.status]||0)+1;
+    locCounts[i.location]=(locCounts[i.location]||0)+1;
+    typeCounts[i.item]=(typeCounts[i.item]||0)+1;
+  });
+  barChart('status-chart',statusCounts,sc,'status');
+  barChart('location-chart',locCounts,null,'location');
+  barChart('type-chart',typeCounts,null,'item');
+
+  const recent=[...maint].slice(-6).reverse();
+  document.getElementById('recent-jobs').innerHTML = recent.length===0
+    ? '<div class="empty-state"><p>No recent jobs</p></div>'
+    : recent.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:600">${m.wo} — ${m.device}</div><div style="font-size:12px;color:var(--text2)">${m.issue}</div></div>
+        ${statusBadge(m.status)}</div>`).join('');
+
+  // Warranty alerts
+  const today=new Date(); today.setHours(0,0,0,0);
+  const alerts=inventory.filter(i=>i.warranty&&Math.round((new Date(i.warranty)-today)/86400000)<=30);
+  const alertBox=document.getElementById('warranty-alert-box');
+  if (alerts.length>0) {
+    alertBox.style.display='block';
+    document.getElementById('warranty-alert-list').innerHTML=alerts.map(i=>{
+      const diff=Math.round((new Date(i.warranty)-today)/86400000);
+      return `<div style="font-size:13px;padding:4px 0;border-bottom:1px solid rgba(245,158,11,.2)">
+        ${diff<0?'⛔':'⚠️'} <strong>${i.code}</strong> — ${i.item} — Warranty ${diff<0?'expired':'expires in '+diff+' days'} (${i.warranty})
+      </div>`;
+    }).join('');
+  } else {
+    alertBox.style.display='none';
+  }
+}
+
+// ==============================================================
 // INVENTORY
-// ============================================================
+// ==============================================================
 function getFilteredInventory() {
-  const search = document.getElementById('inv-search').value.toLowerCase();
-  const fDept = document.getElementById('inv-filter-dept').value;
-  const fType = document.getElementById('inv-filter-type').value;
-  const fStatus = document.getElementById('inv-filter-status').value;
-  const fLoc = document.getElementById('inv-filter-loc').value;
-  const fWarranty = document.getElementById('inv-filter-warranty').value;
-  const today = new Date(); today.setHours(0,0,0,0);
-  return inventory.filter(i => {
-    if (fWarranty && i.warranty) {
-      const diffDays = Math.round((new Date(i.warranty) - today) / 86400000);
-      if (fWarranty === 'expired' && diffDays >= 0) return false;
-      if (fWarranty === 'expiring' && (diffDays < 0 || diffDays > 30)) return false;
-    } else if (fWarranty) {
-      return false; // filtering by warranty status but no warranty date set
-    }
-    return (!search || i.code.toLowerCase().includes(search) || i.owner.toLowerCase().includes(search) || i.item.toLowerCase().includes(search) || (i.remark||'').toLowerCase().includes(search)) &&
-      (!globalDept || i.dept === globalDept) &&
-      (!fDept || i.dept === fDept) &&
-      (!fType || i.item === fType) &&
-      (!fStatus || i.status === fStatus) &&
-      (!fLoc || i.location === fLoc);
+  const search=document.getElementById('inv-search').value.toLowerCase();
+  const fDept=document.getElementById('inv-filter-dept').value;
+  const fStatus=document.getElementById('inv-filter-status').value;
+  const fW=document.getElementById('inv-filter-warranty').value;
+  const today=new Date(); today.setHours(0,0,0,0);
+  return inventory.filter(i=>{
+    if (fW && i.warranty) {
+      const d=Math.round((new Date(i.warranty)-today)/86400000);
+      if (fW==='expired'&&d>=0) return false;
+      if (fW==='expiring'&&(d<0||d>30)) return false;
+    } else if (fW) return false;
+    return (!search||(i.code+i.owner+i.item+(i.remark||'')).toLowerCase().includes(search))
+      &&(!globalDept||i.dept===globalDept)&&(!fDept||i.dept===fDept)&&(!fStatus||i.status===fStatus);
   });
 }
 
 function renderInventory() {
-  const data = getFilteredInventory();
-  const total = data.length;
-  const start = (invPage - 1) * PER_PAGE;
-  const page = data.slice(start, start + PER_PAGE);
-  document.getElementById('inv-count').textContent = `(${total} items)`;
-  const tbody = document.getElementById('inv-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="13"><div class="empty-state"><div class="icon">🔍</div><p>No items found</p></div></td></tr>` :
-    page.map((i, idx) => {
-      const w = warrantyInfo(i.warranty);
-      return `
-      <tr>
-        <td>${start + idx + 1}</td>
-        <td><span class="badge badge-completed">${i.dept}</span></td>
+  const data=getFilteredInventory(), total=data.length;
+  const start=(invPage-1)*PER_PAGE, page=data.slice(start,start+PER_PAGE);
+  document.getElementById('inv-count').textContent=`(${total} items)`;
+  const canEdit=currentRole==='admin';
+  document.getElementById('inv-tbody').innerHTML = page.length===0
+    ? `<tr><td colspan="12"><div class="empty-state"><div class="icon">🔍</div><p>No items found</p></div></td></tr>`
+    : page.map((i,idx)=>`<tr>
+        <td>${start+idx+1}</td>
+        <td>${deptBadge(i.dept)}</td>
         <td style="font-family:monospace;font-size:12px;color:var(--accent)">${i.code}</td>
-        <td>${i.item}</td>
-        <td>${i.owner}</td>
-        <td>${i.location}</td>
+        <td>${i.item}</td><td>${i.owner}</td><td>${i.location}</td>
         <td style="font-size:12px">${i.desc1||'—'}</td>
         <td style="font-size:12px">${i.desc3||'—'}</td>
-        <td style="font-size:12px">${i.desc4||'—'}</td>
-        <td>${w.cls ? `<span class="badge ${w.cls}">${w.label}</span>` : `<span style="font-size:12px;color:var(--text2)">${w.label}</span>`}</td>
+        <td>${warrantyDisplay(i.warranty)}</td>
         <td>${statusBadge(i.status)}</td>
-        <td style="font-size:12px;color:var(--text2);max-width:160px">${i.remark||'—'}</td>
+        <td style="font-size:12px;color:var(--text2);max-width:140px">${i.remark||'—'}</td>
         <td><div class="actions">
-          <button class="btn btn-secondary btn-sm" onclick="editInventory(${i.id})">✏️</button>
+          ${canEdit?`<button class="btn btn-secondary btn-sm" onclick="editInventory(${i.id})">✏️</button>`:''}
           <button class="btn btn-secondary btn-sm" title="View related software" onclick="viewSoftwareForDevice('${i.code}')">💿</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteRecord('inventory',${i.id})">🗑️</button>
+          ${canEdit?`<button class="btn btn-danger btn-sm" onclick="deleteRecord('inventory',${i.id})">🗑️</button>`:''}
         </div></td>
-      </tr>`;
-    }).join('');
-  renderPagination('inv', total, invPage, (p) => { invPage = p; renderInventory(); });
-  document.getElementById('inv-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+      </tr>`).join('');
+  renderPagination('inv',total,invPage,p=>{invPage=p;renderInventory();});
+  document.getElementById('inv-page-info').textContent=`Showing ${start+1}–${Math.min(start+PER_PAGE,total)} of ${total}`;
 }
 
-function openAddModal() {
-  if (currentPage === 'inventory') {
-    document.getElementById('inv-modal-title').textContent = 'Add Inventory Item';
-    document.getElementById('inv-edit-id').value = '';
-    ['inv-code','inv-owner','inv-desc1','inv-desc2','inv-desc3','inv-desc4','inv-remark','inv-warranty'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('inv-dept').value = globalDept || 'IT';
-    document.getElementById('inv-item').value = 'Dell CPU';
-    document.getElementById('inv-location').value = 'ICT Room';
-    document.getElementById('inv-status').value = 'OK';
-    onInvDeptChange();
-    openModal('modal-inventory');
-  } else if (currentPage === 'maintenance') {
-    document.getElementById('maint-modal-title').textContent = 'Add Work Order';
-    document.getElementById('maint-edit-id').value = '';
-    const nextWO = 'CM' + String(maintenance.length + 1).padStart(4, '0');
-    document.getElementById('maint-wo').value = nextWO;
-    document.getElementById('maint-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('maint-dept').value = globalDept || 'IT';
-    ['maint-device','maint-desc','maint-issue','maint-findings','maint-recommendation','maint-complete'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('maint-status').value = 'Pending';
-    openModal('modal-maintenance');
-  } else if (currentPage === 'transfer') {
-    document.getElementById('trans-modal-title').textContent = 'Add Transfer Record';
-    document.getElementById('trans-edit-id').value = '';
-    document.getElementById('trans-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('trans-dept').value = globalDept || 'IT';
-    ['trans-code','trans-from','trans-to','trans-reason','trans-remark'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('trans-pic').value = 'Hafiz';
-    document.getElementById('trans-auth').value = 'Hafiz';
-    openModal('modal-transfer');
-  } else if (currentPage === 'software') {
-    document.getElementById('soft-modal-title').textContent = 'Add Software';
-    document.getElementById('soft-edit-id').value = '';
-    ['soft-name','soft-version','soft-license','soft-link','soft-notes'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('soft-category').value = 'Utility';
-    document.getElementById('soft-source').value = 'Google Drive';
-    openModal('modal-software');
+function onInvDeptChange() {
+  const dept=document.getElementById('inv-dept').value;
+  const labels=DEPT_FIELDS[dept]||DEPT_FIELDS['IT'];
+  [1,2,3,4].forEach(n=>{
+    const lbl=labels[n-1]||'';
+    document.getElementById('inv-label-'+n).textContent=lbl||'Notes';
+    document.getElementById('inv-grp-'+n).style.display=lbl?''  :'none';
+  });
+}
+
+function openInvModal(edit=false) {
+  document.getElementById('inv-modal-title').textContent=edit?'Edit Inventory Item':'Add Inventory Item';
+  if (!edit) {
+    document.getElementById('inv-edit-id').value='';
+    ['inv-code','inv-owner','inv-desc1','inv-desc2','inv-desc3','inv-desc4','inv-remark','inv-warranty'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('inv-dept').value=globalDept||'IT';
+    document.getElementById('inv-item').value='Dell CPU';
+    document.getElementById('inv-location').value='ICT Room';
+    document.getElementById('inv-status').value='OK';
   }
-}
-
-function editInventory(id) {
-  const i = inventory.find(x => x.id === id);
-  if (!i) return;
-  document.getElementById('inv-modal-title').textContent = 'Edit Inventory Item';
-  document.getElementById('inv-edit-id').value = id;
-  document.getElementById('inv-dept').value = i.dept || 'IT';
-  document.getElementById('inv-code').value = i.code;
-  document.getElementById('inv-item').value = i.item;
-  document.getElementById('inv-owner').value = i.owner;
-  document.getElementById('inv-location').value = i.location;
-  document.getElementById('inv-warranty').value = i.warranty || '';
-  document.getElementById('inv-desc1').value = i.desc1;
-  document.getElementById('inv-desc2').value = i.desc2;
-  document.getElementById('inv-desc3').value = i.desc3;
-  document.getElementById('inv-desc4').value = i.desc4;
-  document.getElementById('inv-status').value = i.status;
-  document.getElementById('inv-remark').value = i.remark;
   onInvDeptChange();
   openModal('modal-inventory');
 }
 
-function saveInventory() {
-  const editId = document.getElementById('inv-edit-id').value;
-  const code = document.getElementById('inv-code').value.trim();
-  if (!code) { showToast('Item code is required', 'error'); return; }
-  const obj = {
-    dept: document.getElementById('inv-dept').value,
-    code, item: document.getElementById('inv-item').value,
-    owner: document.getElementById('inv-owner').value,
-    location: document.getElementById('inv-location').value,
-    warranty: document.getElementById('inv-warranty').value,
-    desc1: document.getElementById('inv-desc1').value,
-    desc2: document.getElementById('inv-desc2').value,
-    desc3: document.getElementById('inv-desc3').value,
-    desc4: document.getElementById('inv-desc4').value, desc5: '',
-    status: document.getElementById('inv-status').value,
-    remark: document.getElementById('inv-remark').value,
-  };
-  if (editId) {
-    const idx = inventory.findIndex(x => x.id == editId);
-    inventory[idx] = { ...inventory[idx], ...obj };
-    showToast('Item updated successfully', 'success');
-  } else {
-    inventory.push({ id: nextInvId++, no: inventory.length + 1, ...obj });
-    showToast('Item added successfully', 'success');
-  }
-  closeModal('modal-inventory');
-  renderInventory();
-  pushToSheets();
+function editInventory(id) {
+  const i=inventory.find(x=>x.id===id); if(!i) return;
+  document.getElementById('inv-edit-id').value=id;
+  document.getElementById('inv-dept').value=i.dept||'IT';
+  document.getElementById('inv-code').value=i.code;
+  document.getElementById('inv-item').value=i.item;
+  document.getElementById('inv-owner').value=i.owner;
+  document.getElementById('inv-location').value=i.location;
+  document.getElementById('inv-warranty').value=i.warranty||''  ;
+  document.getElementById('inv-desc1').value=i.desc1||''  ;
+  document.getElementById('inv-desc2').value=i.desc2||''  ;
+  document.getElementById('inv-desc3').value=i.desc3||''  ;
+  document.getElementById('inv-desc4').value=i.desc4||''  ;
+  document.getElementById('inv-status').value=i.status;
+  document.getElementById('inv-remark').value=i.remark||''  ;
+  openInvModal(true);
 }
 
-// ============================================================
+function saveInventory() {
+  const editId=document.getElementById('inv-edit-id').value;
+  const code=document.getElementById('inv-code').value.trim();
+  if (!code) { showToast('Item code is required','error'); return; }
+  const obj={
+    dept:document.getElementById('inv-dept').value,
+    code, item:document.getElementById('inv-item').value,
+    owner:document.getElementById('inv-owner').value,
+    location:document.getElementById('inv-location').value,
+    warranty:document.getElementById('inv-warranty').value,
+    desc1:document.getElementById('inv-desc1').value,
+    desc2:document.getElementById('inv-desc2').value,
+    desc3:document.getElementById('inv-desc3').value,
+    desc4:document.getElementById('inv-desc4').value, desc5:''  ,
+    status:document.getElementById('inv-status').value,
+    remark:document.getElementById('inv-remark').value,
+  };
+  if (editId) { inventory[inventory.findIndex(x=>x.id==editId)]={...inventory.find(x=>x.id==editId),...obj}; showToast('Item updated','success'); }
+  else { inventory.push({id:nextInvId++,no:inventory.length+1,...obj}); showToast('Item added','success'); }
+  closeModal('modal-inventory'); renderInventory(); renderDashboard(); pushToSheets();
+}
+
+// ==============================================================
 // MAINTENANCE
-// ============================================================
+// ==============================================================
 function getFilteredMaintenance() {
-  const search = document.getElementById('maint-search').value.toLowerCase();
-  const fDept = document.getElementById('maint-filter-dept').value;
-  const fStatus = document.getElementById('maint-filter-status').value;
-  return maintenance.filter(m =>
-    (!search || m.wo.toLowerCase().includes(search) || m.device.toLowerCase().includes(search) || m.issue.toLowerCase().includes(search)) &&
-    (!globalDept || m.dept === globalDept) &&
-    (!fDept || m.dept === fDept) &&
-    (!fStatus || m.status === fStatus)
-  );
+  const search=document.getElementById('maint-search').value.toLowerCase();
+  const fDept=document.getElementById('maint-filter-dept').value;
+  const fStatus=document.getElementById('maint-filter-status').value;
+  return maintenance.filter(m=>
+    (!search||(m.wo+m.device+m.issue).toLowerCase().includes(search))
+    &&(!globalDept||m.dept===globalDept)&&(!fDept||m.dept===fDept)&&(!fStatus||m.status===fStatus));
 }
 
 function renderMaintenance() {
-  const data = getFilteredMaintenance();
-  const total = data.length;
-  const start = (maintPage - 1) * PER_PAGE;
-  const page = data.slice(start, start + PER_PAGE);
-  document.getElementById('maint-count').textContent = `(${total} records)`;
-  const tbody = document.getElementById('maint-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
-    page.map(m => `
-      <tr>
-        <td><span class="badge badge-completed">${m.dept}</span></td>
-        <td style="font-weight:600;color:var(--accent)">${m.wo}</td>
-        <td style="font-size:12px">${m.dateCheck}</td>
-        <td style="font-family:monospace;font-size:12px">${m.device}</td>
-        <td style="font-size:12px">${m.desc}</td>
-        <td style="max-width:150px;font-size:12px">${m.issue}</td>
-        <td style="max-width:160px;font-size:12px;color:var(--text2)">${m.findings||'—'}</td>
-        <td style="max-width:160px;font-size:12px;color:var(--text2)">${m.recommendation||'—'}</td>
-        <td>${statusBadge(m.status)}</td>
-        <td style="font-size:12px">${m.dateComplete||'—'}</td>
-        <td><div class="actions">
-          <button class="btn btn-secondary btn-sm" onclick="editMaintenance(${m.id})">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteRecord('maintenance',${m.id})">🗑️</button>
-        </div></td>
-      </tr>`).join('');
-  renderPagination('maint', total, maintPage, (p) => { maintPage = p; renderMaintenance(); });
-  document.getElementById('maint-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+  const data=getFilteredMaintenance(), total=data.length;
+  const start=(maintPage-1)*PER_PAGE, page=data.slice(start,start+PER_PAGE);
+  document.getElementById('maint-count').textContent=`(${total} records)`;
+  const canEdit=currentRole==='admin';
+  document.getElementById('maint-tbody').innerHTML = page.length===0
+    ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>`
+    : page.map(m=>{
+        const photoBtns = [
+          m.photoBefore?`<a href="${m.photoBefore}" target="_blank"><img src="${m.photoBefore.replace('/view','/thumb').replace('drive.google.com/file/d/','drive.google.com/thumbnail?id=').replace('/view','&sz=w80')}" style="width:40px;height:30px;object-fit:cover;border-radius:3px;cursor:pointer" title="Before photo"></a>`:'',
+          m.photoAfter?`<a href="${m.photoAfter}" target="_blank"><img src="${m.photoAfter.replace('/view','/thumb').replace('drive.google.com/file/d/','drive.google.com/thumbnail?id=').replace('/view','&sz=w80')}" style="width:40px;height:30px;object-fit:cover;border-radius:3px;cursor:pointer" title="After photo"></a>`:'',
+        ].filter(Boolean).join(' ');
+        return `<tr>
+          <td>${deptBadge(m.dept)}</td>
+          <td style="font-weight:600;color:var(--accent)">${m.wo}</td>
+          <td style="font-size:12px">${m.dateCheck}</td>
+          <td style="font-family:monospace;font-size:12px">${m.device}</td>
+          <td style="max-width:140px;font-size:12px">${m.issue}</td>
+          <td style="max-width:140px;font-size:12px;color:var(--text2)">${m.findings||'—'}</td>
+          <td style="max-width:140px;font-size:12px;color:var(--text2)">${m.recommendation||'—'}</td>
+          <td>${statusBadge(m.status)}</td>
+          <td style="font-size:12px">${m.dateComplete||'—'}</td>
+          <td>${photoBtns||'—'}</td>
+          <td><div class="actions">
+            <button class="btn btn-secondary btn-sm" onclick="editMaintenance(${m.id})">✏️</button>
+            ${canEdit?`<button class="btn btn-danger btn-sm" onclick="deleteRecord('maintenance',${m.id})">🗑️</button>`:''}
+          </div></td>
+        </tr>`;
+      }).join('');
+  renderPagination('maint',total,maintPage,p=>{maintPage=p;renderMaintenance();});
+  document.getElementById('maint-page-info').textContent=`Showing ${start+1}–${Math.min(start+PER_PAGE,total)} of ${total}`;
+}
+
+function resetMaintModal() {
+  document.getElementById('maint-edit-id').value='';
+  document.getElementById('maint-wo').value='CM'+String(maintenance.length+1).padStart(4,'0');
+  document.getElementById('maint-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('maint-dept').value=globalDept||'IT';
+  ['maint-device','maint-desc','maint-issue','maint-findings','maint-recommendation','maint-complete','maint-photo-before','maint-photo-after'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('maint-status').value='Pending';
+  resetPhotoPreview('before'); resetPhotoPreview('after');
 }
 
 function editMaintenance(id) {
-  const m = maintenance.find(x => x.id === id);
-  if (!m) return;
-  document.getElementById('maint-modal-title').textContent = 'Edit Work Order';
-  document.getElementById('maint-edit-id').value = id;
-  document.getElementById('maint-dept').value = m.dept || 'IT';
-  document.getElementById('maint-wo').value = m.wo;
-  document.getElementById('maint-date').value = m.dateCheck;
-  document.getElementById('maint-device').value = m.device;
-  document.getElementById('maint-desc').value = m.desc;
-  document.getElementById('maint-issue').value = m.issue;
-  document.getElementById('maint-findings').value = m.findings;
-  document.getElementById('maint-recommendation').value = m.recommendation;
-  document.getElementById('maint-status').value = m.status;
-  document.getElementById('maint-complete').value = m.dateComplete;
+  const m=maintenance.find(x=>x.id===id); if(!m) return;
+  document.getElementById('maint-modal-title').textContent='Edit Work Order';
+  document.getElementById('maint-edit-id').value=id;
+  document.getElementById('maint-dept').value=m.dept||'IT';
+  document.getElementById('maint-wo').value=m.wo;
+  document.getElementById('maint-date').value=m.dateCheck;
+  document.getElementById('maint-device').value=m.device;
+  document.getElementById('maint-desc').value=m.desc;
+  document.getElementById('maint-issue').value=m.issue;
+  document.getElementById('maint-findings').value=m.findings||''  ;
+  document.getElementById('maint-recommendation').value=m.recommendation||''  ;
+  document.getElementById('maint-status').value=m.status;
+  document.getElementById('maint-complete').value=m.dateComplete||''  ;
+  document.getElementById('maint-photo-before').value=m.photoBefore||''  ;
+  document.getElementById('maint-photo-after').value=m.photoAfter||''  ;
+  // Show existing photos
+  if (m.photoBefore) showPhotoPreview('before', m.photoBefore.replace('drive.google.com/file/d/','drive.google.com/thumbnail?id=').replace('/view','&sz=w400'));
+  else resetPhotoPreview('before');
+  if (m.photoAfter) showPhotoPreview('after', m.photoAfter.replace('drive.google.com/file/d/','drive.google.com/thumbnail?id=').replace('/view','&sz=w400'));
+  else resetPhotoPreview('after');
   openModal('modal-maintenance');
 }
 
+function autofillDevice() {
+  const code=document.getElementById('maint-device').value.trim();
+  const match=inventory.find(i=>i.code===code);
+  if (match) document.getElementById('maint-desc').value=match.item;
+}
+
 function saveMaintenance() {
-  const editId = document.getElementById('maint-edit-id').value;
-  const wo = document.getElementById('maint-wo').value.trim();
-  const device = document.getElementById('maint-device').value.trim();
-  if (!wo || !device) { showToast('Work Order No and Device are required', 'error'); return; }
-  const obj = {
-    dept: document.getElementById('maint-dept').value,
-    wo, dateCheck: document.getElementById('maint-date').value,
-    device, desc: document.getElementById('maint-desc').value,
-    issue: document.getElementById('maint-issue').value,
-    findings: document.getElementById('maint-findings').value,
-    recommendation: document.getElementById('maint-recommendation').value,
-    status: document.getElementById('maint-status').value,
-    dateComplete: document.getElementById('maint-complete').value,
+  const editId=document.getElementById('maint-edit-id').value;
+  const wo=document.getElementById('maint-wo').value.trim();
+  const device=document.getElementById('maint-device').value.trim();
+  if (!wo||!device) { showToast('Work Order No and Device are required','error'); return; }
+  const obj={
+    dept:document.getElementById('maint-dept').value,
+    wo, dateCheck:document.getElementById('maint-date').value,
+    device, desc:document.getElementById('maint-desc').value,
+    issue:document.getElementById('maint-issue').value,
+    findings:document.getElementById('maint-findings').value,
+    recommendation:document.getElementById('maint-recommendation').value,
+    status:document.getElementById('maint-status').value,
+    dateComplete:document.getElementById('maint-complete').value,
+    photoBefore:document.getElementById('maint-photo-before').value,
+    photoAfter:document.getElementById('maint-photo-after').value,
   };
-  if (editId) {
-    const idx = maintenance.findIndex(x => x.id == editId);
-    maintenance[idx] = { ...maintenance[idx], ...obj };
-    showToast('Work order updated', 'success');
-  } else {
-    maintenance.push({ id: nextMaintId++, ...obj });
-    showToast('Work order added', 'success');
-  }
-  syncInventoryStatusFromWorkOrder(device, obj.status);
-  closeModal('modal-maintenance');
-  renderMaintenance();
-  renderInventory();
-  pushToSheets();
+  if (editId) { maintenance[maintenance.findIndex(x=>x.id==editId)]={...maintenance.find(x=>x.id==editId),...obj}; showToast('Work order updated','success'); }
+  else { maintenance.push({id:nextMaintId++,...obj}); showToast('Work order added','success'); }
+  syncInventoryStatus(device, obj.status);
+  closeModal('modal-maintenance'); renderMaintenance(); renderDashboard(); pushToSheets();
 }
 
-// Keep Inventory status in sync with the linked Work Order's status.
-// Pending/In Progress -> "Need Repair". Completed -> "OK" (unless another
-// open work order still references the same device).
-function syncInventoryStatusFromWorkOrder(deviceCode, woStatus) {
-  const item = inventory.find(i => i.code === deviceCode);
-  if (!item) return; // device code didn't match an inventory item (e.g. multi-device WO) - skip silently
-  if (woStatus === 'Pending' || woStatus === 'In Progress') {
-    item.status = 'Need Repair';
-  } else if (woStatus === 'Completed') {
-    const stillOpen = maintenance.some(m => m.device === deviceCode && m.status !== 'Completed');
-    if (!stillOpen) item.status = 'OK';
+function syncInventoryStatus(deviceCode, woStatus) {
+  const item=inventory.find(i=>i.code===deviceCode); if(!item) return;
+  if (woStatus==='Pending'||woStatus==='In Progress') item.status='Need Repair';
+  else if (woStatus==='Completed') {
+    const stillOpen=maintenance.some(m=>m.device===deviceCode&&m.status!=='Completed');
+    if (!stillOpen) item.status='OK';
   }
 }
 
-// Autofill device description when a known device code is typed into the WO form
-document.addEventListener('DOMContentLoaded', () => {
-  const deviceInput = document.getElementById('maint-device');
-  if (deviceInput) {
-    deviceInput.addEventListener('blur', () => {
-      const match = inventory.find(i => i.code === deviceInput.value.trim());
-      if (match) document.getElementById('maint-desc').value = match.item;
-    });
-  }
-});
-
-// ============================================================
+// ==============================================================
 // TRANSFER
-// ============================================================
+// ==============================================================
 function getFilteredTransfer() {
-  const search = document.getElementById('trans-search').value.toLowerCase();
-  const fDept = document.getElementById('trans-filter-dept').value;
-  return transfers.filter(t =>
-    (!search || t.code.toLowerCase().includes(search) || t.from.toLowerCase().includes(search) || t.to.toLowerCase().includes(search) || (t.reason||'').toLowerCase().includes(search)) &&
-    (!globalDept || t.dept === globalDept) &&
-    (!fDept || t.dept === fDept)
-  );
+  const search=document.getElementById('trans-search').value.toLowerCase();
+  const fDept=document.getElementById('trans-filter-dept').value;
+  return transfers.filter(t=>
+    (!search||(t.code+t.from+t.to+(t.reason||'')).toLowerCase().includes(search))
+    &&(!globalDept||t.dept===globalDept)&&(!fDept||t.dept===fDept));
 }
 
 function renderTransfer() {
-  const data = getFilteredTransfer();
-  const total = data.length;
-  const start = (transPage - 1) * PER_PAGE;
-  const page = data.slice(start, start + PER_PAGE);
-  document.getElementById('trans-count').textContent = `(${total} records)`;
-  const tbody = document.getElementById('trans-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>` :
-    page.map((t, idx) => `
-      <tr>
-        <td>${start + idx + 1}</td>
-        <td><span class="badge badge-completed">${t.dept}</span></td>
+  const data=getFilteredTransfer(), total=data.length;
+  const start=(transPage-1)*PER_PAGE, page=data.slice(start,start+PER_PAGE);
+  document.getElementById('trans-count').textContent=`(${total} records)`;
+  const canEdit=currentRole==='admin';
+  document.getElementById('trans-tbody').innerHTML = page.length===0
+    ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🔍</div><p>No records found</p></div></td></tr>`
+    : page.map((t,idx)=>`<tr>
+        <td>${start+idx+1}</td><td>${deptBadge(t.dept)}</td>
         <td style="font-size:12px">${t.date}</td>
         <td style="font-family:monospace;font-size:12px;color:var(--accent)">${t.code}</td>
-        <td>${t.from}</td>
-        <td>${t.to}</td>
-        <td>${t.pic}</td>
-        <td style="font-size:12px;max-width:160px">${t.reason}</td>
+        <td>${t.from}</td><td>${t.to}</td><td>${t.pic}</td>
+        <td style="font-size:12px;max-width:160px">${t.reason||'—'}</td>
         <td>${t.auth}</td>
         <td style="font-size:12px;color:var(--text2)">${t.remark||'—'}</td>
         <td><div class="actions">
           <button class="btn btn-secondary btn-sm" onclick="editTransfer(${t.id})">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteRecord('transfer',${t.id})">🗑️</button>
+          ${canEdit?`<button class="btn btn-danger btn-sm" onclick="deleteRecord('transfer',${t.id})">🗑️</button>`:''}
         </div></td>
       </tr>`).join('');
-  renderPagination('trans', total, transPage, (p) => { transPage = p; renderTransfer(); });
-  document.getElementById('trans-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+  renderPagination('trans',total,transPage,p=>{transPage=p;renderTransfer();});
+  document.getElementById('trans-page-info').textContent=`Showing ${start+1}–${Math.min(start+PER_PAGE,total)} of ${total}`;
 }
 
 function editTransfer(id) {
-  const t = transfers.find(x => x.id === id);
-  if (!t) return;
-  document.getElementById('trans-modal-title').textContent = 'Edit Transfer Record';
-  document.getElementById('trans-edit-id').value = id;
-  document.getElementById('trans-dept').value = t.dept || 'IT';
-  document.getElementById('trans-date').value = t.date;
-  document.getElementById('trans-code').value = t.code;
-  document.getElementById('trans-from').value = t.from;
-  document.getElementById('trans-to').value = t.to;
-  document.getElementById('trans-pic').value = t.pic;
-  document.getElementById('trans-auth').value = t.auth;
-  document.getElementById('trans-reason').value = t.reason;
-  document.getElementById('trans-remark').value = t.remark;
+  const t=transfers.find(x=>x.id===id); if(!t) return;
+  document.getElementById('trans-modal-title').textContent='Edit Transfer Record';
+  document.getElementById('trans-edit-id').value=id;
+  document.getElementById('trans-dept').value=t.dept||'IT';
+  document.getElementById('trans-date').value=t.date;
+  document.getElementById('trans-code').value=t.code;
+  document.getElementById('trans-from').value=t.from;
+  document.getElementById('trans-to').value=t.to;
+  document.getElementById('trans-pic').value=t.pic;
+  document.getElementById('trans-auth').value=t.auth;
+  document.getElementById('trans-reason').value=t.reason||''  ;
+  document.getElementById('trans-remark').value=t.remark||''  ;
   openModal('modal-transfer');
 }
 
 function saveTransfer() {
-  const editId = document.getElementById('trans-edit-id').value;
-  const code = document.getElementById('trans-code').value.trim();
-  const from = document.getElementById('trans-from').value.trim();
-  const to = document.getElementById('trans-to').value.trim();
-  if (!code || !from || !to) { showToast('Code, From and To are required', 'error'); return; }
-  const obj = {
-    dept: document.getElementById('trans-dept').value,
-    date: document.getElementById('trans-date').value,
+  const editId=document.getElementById('trans-edit-id').value;
+  const code=document.getElementById('trans-code').value.trim();
+  const from=document.getElementById('trans-from').value.trim();
+  const to=document.getElementById('trans-to').value.trim();
+  if (!code||!from||!to) { showToast('Code, From and To are required','error'); return; }
+  const obj={
+    dept:document.getElementById('trans-dept').value,
+    date:document.getElementById('trans-date').value,
     code, from, to,
-    pic: document.getElementById('trans-pic').value,
-    auth: document.getElementById('trans-auth').value,
-    reason: document.getElementById('trans-reason').value,
-    remark: document.getElementById('trans-remark').value,
+    pic:document.getElementById('trans-pic').value,
+    auth:document.getElementById('trans-auth').value,
+    reason:document.getElementById('trans-reason').value,
+    remark:document.getElementById('trans-remark').value,
   };
-  if (editId) {
-    const idx = transfers.findIndex(x => x.id == editId);
-    transfers[idx] = { ...transfers[idx], ...obj };
-    showToast('Transfer record updated', 'success');
-  } else {
-    transfers.push({ id: nextTransId++, no: transfers.length + 1, ...obj });
-    showToast('Transfer record added', 'success');
-  }
-  closeModal('modal-transfer');
-  renderTransfer();
-  pushToSheets();
+  if (editId) { transfers[transfers.findIndex(x=>x.id==editId)]={...transfers.find(x=>x.id==editId),...obj}; showToast('Transfer updated','success'); }
+  else { transfers.push({id:nextTransId++,no:transfers.length+1,...obj}); showToast('Transfer added','success'); }
+  closeModal('modal-transfer'); renderTransfer(); pushToSheets();
 }
 
-// ============================================================
-// SOFTWARE LIBRARY
-// ============================================================
-function maskKey(key) {
-  if (!key) return '—';
-  return '•••• hidden';
-}
-
+// ==============================================================
+// SOFTWARE
+// ==============================================================
 function getFilteredSoftware() {
-  const search = document.getElementById('soft-search').value.toLowerCase();
-  const fCat = document.getElementById('soft-filter-category').value;
-  return software.filter(s =>
-    (!search || s.name.toLowerCase().includes(search) || (s.notes||'').toLowerCase().includes(search)) &&
-    (!fCat || s.category === fCat)
-  );
+  const search=document.getElementById('soft-search').value.toLowerCase();
+  const fCat=document.getElementById('soft-filter-cat').value;
+  return software.filter(s=>
+    (!search||s.name.toLowerCase().includes(search)||(s.notes||''  ).toLowerCase().includes(search))&&(!fCat||s.category===fCat));
 }
 
 function renderSoftware() {
-  const data = getFilteredSoftware();
-  const total = data.length;
-  const start = (softPage - 1) * PER_PAGE;
-  const page = data.slice(start, start + PER_PAGE);
-  document.getElementById('soft-count').textContent = `(${total} items)`;
-  const tbody = document.getElementById('soft-tbody');
-  tbody.innerHTML = page.length === 0 ? `<tr><td colspan="8"><div class="empty-state"><div class="icon">💿</div><p>No software found</p></div></td></tr>` :
-    page.map(s => `
-      <tr>
+  const data=getFilteredSoftware(), total=data.length;
+  const start=(softPage-1)*PER_PAGE, page=data.slice(start,start+PER_PAGE);
+  document.getElementById('soft-count').textContent=`(${total} items)`;
+  const canEdit=currentRole==='admin';
+  document.getElementById('soft-tbody').innerHTML = page.length===0
+    ? `<tr><td colspan="8"><div class="empty-state"><div class="icon">💿</div><p>No software found</p></div></td></tr>`
+    : page.map(s=>`<tr>
         <td style="font-weight:600">${s.name}</td>
         <td><span class="badge badge-completed">${s.category}</span></td>
         <td style="font-size:12px">${s.version||'—'}</td>
         <td style="font-size:12px;font-family:monospace">
-          <span id="key-display-${s.id}">${maskKey(s.license)}</span>
-          ${s.license ? `<button class="btn btn-secondary btn-sm" style="margin-left:6px;padding:2px 7px" onclick="toggleKey(${s.id})">👁️</button>` : ''}
+          ${s.license?`<span id="key-${s.id}">•••• hidden</span> <button class="btn btn-secondary btn-sm" style="padding:2px 6px" onclick="toggleKey(${s.id},'${s.license}')">👁️</button>`:'—'}
         </td>
         <td style="font-size:12px">${s.source}</td>
         <td style="font-size:12px;color:var(--text2);max-width:180px">${s.notes||'—'}</td>
         <td><a href="${s.link}" target="_blank" rel="noopener"><button class="btn btn-success btn-sm">⬇️ Get</button></a></td>
-        <td><div class="actions">
+        ${canEdit?`<td><div class="actions">
           <button class="btn btn-secondary btn-sm" onclick="editSoftware(${s.id})">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="deleteRecord('software',${s.id})">🗑️</button>
-        </div></td>
+        </div></td>`:'<td></td>'}
       </tr>`).join('');
-  renderPagination('soft', total, softPage, (p) => { softPage = p; renderSoftware(); });
-  document.getElementById('soft-page-info').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE, total)} of ${total}`;
+  renderPagination('soft',total,softPage,p=>{softPage=p;renderSoftware();});
+  document.getElementById('soft-page-info').textContent=`Showing ${start+1}–${Math.min(start+PER_PAGE,total)} of ${total}`;
 }
 
-function toggleKey(id) {
-  const s = software.find(x => x.id === id);
-  const el = document.getElementById(`key-display-${id}`);
-  if (!s || !el) return;
-  if (el.textContent.includes('hidden')) {
-    el.textContent = s.license;
-    setTimeout(() => { if (el) el.textContent = maskKey(s.license); }, 8000); // auto re-hide after 8s
-  } else {
-    el.textContent = maskKey(s.license);
-  }
+function toggleKey(id, key) {
+  const el=document.getElementById('key-'+id); if(!el) return;
+  if (el.textContent.includes('hidden')) { el.textContent=key; setTimeout(()=>{if(el)el.textContent='•••• hidden';},8000); }
+  else el.textContent='•••• hidden';
 }
 
 function editSoftware(id) {
-  const s = software.find(x => x.id === id);
-  if (!s) return;
-  document.getElementById('soft-modal-title').textContent = 'Edit Software';
-  document.getElementById('soft-edit-id').value = id;
-  document.getElementById('soft-name').value = s.name;
-  document.getElementById('soft-category').value = s.category;
-  document.getElementById('soft-version').value = s.version;
-  document.getElementById('soft-license').value = s.license;
-  document.getElementById('soft-source').value = s.source;
-  document.getElementById('soft-link').value = s.link;
-  document.getElementById('soft-notes').value = s.notes;
+  const s=software.find(x=>x.id===id); if(!s) return;
+  document.getElementById('soft-modal-title').textContent='Edit Software';
+  document.getElementById('soft-edit-id').value=id;
+  document.getElementById('soft-name').value=s.name;
+  document.getElementById('soft-category').value=s.category;
+  document.getElementById('soft-version').value=s.version||''  ;
+  document.getElementById('soft-license').value=s.license||''  ;
+  document.getElementById('soft-source').value=s.source;
+  document.getElementById('soft-link').value=s.link;
+  document.getElementById('soft-notes').value=s.notes||''  ;
   openModal('modal-software');
 }
 
 function saveSoftware() {
-  const editId = document.getElementById('soft-edit-id').value;
-  const name = document.getElementById('soft-name').value.trim();
-  const link = document.getElementById('soft-link').value.trim();
-  if (!name || !link) { showToast('Software name and download link are required', 'error'); return; }
-  const obj = {
-    name, category: document.getElementById('soft-category').value,
-    version: document.getElementById('soft-version').value,
-    license: document.getElementById('soft-license').value,
-    source: document.getElementById('soft-source').value,
-    link, notes: document.getElementById('soft-notes').value,
-  };
-  if (editId) {
-    const idx = software.findIndex(x => x.id == editId);
-    software[idx] = { ...software[idx], ...obj };
-    showToast('Software updated', 'success');
-  } else {
-    software.push({ id: nextSoftId++, ...obj });
-    showToast('Software added', 'success');
+  const editId=document.getElementById('soft-edit-id').value;
+  const name=document.getElementById('soft-name').value.trim();
+  const link=document.getElementById('soft-link').value.trim();
+  if (!name||!link) { showToast('Name and link are required','error'); return; }
+  const obj={name,category:document.getElementById('soft-category').value,version:document.getElementById('soft-version').value,
+    license:document.getElementById('soft-license').value,source:document.getElementById('soft-source').value,link,notes:document.getElementById('soft-notes').value};
+  if (editId) { software[software.findIndex(x=>x.id==editId)]={...software.find(x=>x.id==editId),...obj}; showToast('Software updated','success'); }
+  else { software.push({id:nextSoftId++,...obj}); showToast('Software added','success'); }
+  closeModal('modal-software'); renderSoftware(); pushToSheets();
+}
+
+function viewSoftwareForDevice(code) {
+  showPage('software');
+  document.getElementById('soft-search').value=code;
+  softPage=1; renderSoftware();
+}
+
+// ==============================================================
+// PHOTO UPLOAD
+// ==============================================================
+async function handlePhotoUpload(input, slot) {
+  const file=input.files[0]; if(!file) return;
+  const placeholder=document.getElementById('photo-'+slot+'-placeholder');
+  const uploading=document.getElementById('photo-'+slot+'-uploading');
+  placeholder.style.display='none'; uploading.style.display='block';
+  try {
+    const base64=await fileToBase64(file);
+    if (!isSheetsConnected()) {
+      // No Sheets — store as local object URL for session only
+      const url=URL.createObjectURL(file);
+      document.getElementById('maint-photo-'+slot).value=url;
+      showPhotoPreview(slot, url);
+      showToast('Photo loaded locally (connect Sheets to save permanently)','success');
+      return;
+    }
+    const res=await fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({
+      action:'photo',key:getSheetsKey(),
+      filename:`afs_${slot}_${Date.now()}_${file.name}`,
+      filedata:base64.split(',')[1],
+      mimetype:file.type
+    })}).then(r=>r.json());
+    if (res.success) {
+      document.getElementById('maint-photo-'+slot).value=res.viewUrl;
+      showPhotoPreview(slot, res.thumbUrl);
+      showToast('Photo uploaded successfully','success');
+    } else {
+      showToast('Upload failed: '+(res.error||'unknown error'),'error');
+      resetPhotoPreview(slot);
+    }
+  } catch(e) {
+    showToast('Upload error: '+e.message,'error');
+    resetPhotoPreview(slot);
+  } finally {
+    uploading.style.display='none';
   }
-  closeModal('modal-software');
-  renderSoftware();
-  pushToSheets();
 }
 
-// ============================================================
+function fileToBase64(file) {
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function showPhotoPreview(slot, url) {
+  document.getElementById('photo-'+slot+'-thumb').src=url;
+  document.getElementById('photo-'+slot+'-preview').style.display='block';
+  document.getElementById('photo-'+slot+'-placeholder').style.display='none';
+  document.getElementById('photo-'+slot+'-uploading').style.display='none';
+}
+
+function resetPhotoPreview(slot) {
+  document.getElementById('photo-'+slot+'-preview').style.display='none';
+  document.getElementById('photo-'+slot+'-placeholder').style.display='block';
+  document.getElementById('photo-'+slot+'-uploading').style.display='none';
+  document.getElementById('photo-'+slot+'-thumb').src='';
+}
+
+// ==============================================================
+// ADD MODAL DISPATCHER
+// ==============================================================
+function openAddModal() {
+  if (currentPage==='inventory') openInvModal();
+  else if (currentPage==='maintenance') {
+    document.getElementById('maint-modal-title').textContent='Add Work Order';
+    resetMaintModal();
+    openModal('modal-maintenance');
+  } else if (currentPage==='transfer') {
+    document.getElementById('trans-modal-title').textContent='Add Transfer Record';
+    document.getElementById('trans-edit-id').value='';
+    document.getElementById('trans-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('trans-dept').value=globalDept||'IT';
+    ['trans-code','trans-from','trans-to','trans-reason','trans-remark'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('trans-pic').value=currentUser||''  ;
+    document.getElementById('trans-auth').value=currentUser||''  ;
+    openModal('modal-transfer');
+  } else if (currentPage==='software') {
+    document.getElementById('soft-modal-title').textContent='Add Software';
+    document.getElementById('soft-edit-id').value='';
+    ['soft-name','soft-version','soft-license','soft-link','soft-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('soft-category').value='Utility';
+    document.getElementById('soft-source').value='Google Drive';
+    openModal('modal-software');
+  }
+}
+
+// ==============================================================
 // DELETE
-// ============================================================
-function deleteRecord(type, id) {
-  deleteTarget = { type, id };
-  openModal('modal-confirm');
-}
-
+// ==============================================================
+function deleteRecord(type, id) { deleteTarget={type,id}; openModal('modal-confirm'); }
 function confirmDelete() {
   if (!deleteTarget) return;
-  const { type, id } = deleteTarget;
-  if (type === 'inventory') inventory = inventory.filter(x => x.id !== id);
-  else if (type === 'maintenance') maintenance = maintenance.filter(x => x.id !== id);
-  else if (type === 'transfer') transfers = transfers.filter(x => x.id !== id);
-  else if (type === 'software') software = software.filter(x => x.id !== id);
-  deleteTarget = null;
-  closeModal('modal-confirm');
-  showToast('Record deleted', 'success');
-  if (type === 'inventory') renderInventory();
-  else if (type === 'maintenance') renderMaintenance();
-  else if (type === 'transfer') renderTransfer();
+  const {type,id}=deleteTarget;
+  if (type==='inventory') inventory=inventory.filter(x=>x.id!==id);
+  else if (type==='maintenance') maintenance=maintenance.filter(x=>x.id!==id);
+  else if (type==='transfer') transfers=transfers.filter(x=>x.id!==id);
+  else if (type==='software') software=software.filter(x=>x.id!==id);
+  deleteTarget=null; closeModal('modal-confirm');
+  showToast('Record deleted','success');
+  if (currentPage==='inventory') renderInventory();
+  else if (currentPage==='maintenance') renderMaintenance();
+  else if (currentPage==='transfer') renderTransfer();
   else renderSoftware();
-  pushToSheets();
+  renderDashboard(); pushToSheets();
 }
 
-// ============================================================
+// ==============================================================
 // PAGINATION
-// ============================================================
+// ==============================================================
 function renderPagination(prefix, total, current, onChange) {
-  const pages = Math.ceil(total / PER_PAGE);
-  const el = document.getElementById(prefix + '-pagination');
-  if (pages <= 1) { el.innerHTML = ''; return; }
-  let html = '';
-  for (let p = 1; p <= pages; p++) {
-    html += `<button class="page-btn ${p === current ? 'active' : ''}" onclick="(${onChange.toString()})(${p})">${p}</button>`;
-  }
-  el.innerHTML = html;
+  const pages=Math.ceil(total/PER_PAGE);
+  const el=document.getElementById(prefix+'-pagination');
+  if (pages<=1) { el.innerHTML=''; return; }
+  el.innerHTML=Array.from({length:pages},(_,i)=>i+1)
+    .map(p=>`<button class="page-btn ${p===current?'active':''}" onclick="(${onChange.toString()})(${p})">${p}</button>`).join('');
 }
 
-// ============================================================
-// EXPORT (CSV)
-// ============================================================
+// ==============================================================
+// EXPORT
+// ==============================================================
 function exportData() {
-  let csv = '', filename = '';
-  if (currentPage === 'inventory') {
-    const data = getFilteredInventory();
-    csv = 'No,Department,Code,Item,Owner,Location,Warranty,Field1,Field2,Field3,Field4,Status,Remark\n' +
-      data.map((i,idx) => [idx+1,i.dept,i.code,i.item,i.owner,i.location,i.warranty,i.desc1,i.desc2,i.desc3,i.desc4,i.status,i.remark].map(v => `"${v||''}"`).join(',')).join('\n');
-    filename = 'AFS_Inventory.csv';
-  } else if (currentPage === 'maintenance') {
-    const data = getFilteredMaintenance();
-    csv = 'Department,Work Order,Date Checked,Device,Description,Issue,Findings,Recommendation,Status,Date Completed\n' +
-      data.map(m => [m.dept,m.wo,m.dateCheck,m.device,m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete].map(v => `"${v||''}"`).join(',')).join('\n');
-    filename = 'AFS_Maintenance_Log.csv';
-  } else if (currentPage === 'transfer') {
-    const data = getFilteredTransfer();
-    csv = 'No,Department,Date,Item Code,From,To,Person in Charge,Reason,Authorized By,Remark\n' +
-      data.map((t,idx) => [idx+1,t.dept,t.date,t.code,t.from,t.to,t.pic,t.reason,t.auth,t.remark].map(v => `"${v||''}"`).join(',')).join('\n');
-    filename = 'AFS_Transfer_Log.csv';
-  } else if (currentPage === 'software') {
-    // License keys are deliberately left out of the export for safety.
-    const data = getFilteredSoftware();
-    csv = 'Software,Category,Version,Source,Link,Notes\n' +
-      data.map(s => [s.name,s.category,s.version,s.source,s.link,s.notes].map(v => `"${v||''}"`).join(',')).join('\n');
-    filename = 'AFS_Software_Library.csv';
+  let csv='',filename='';
+  const toCSV=rows=>rows.map(r=>r.map(v=>`"${(v||''  ).toString().replace(/"/g,'''')}"`).join(',')).join('\n');
+  if (currentPage==='inventory') {
+    const data=getFilteredInventory();
+    csv='No,Department,Code,Item,Owner,Location,Warranty,Detail1,Detail2,Detail3,Detail4,Status,Remark\n'+
+      toCSV(data.map((i,idx)=>[idx+1,i.dept,i.code,i.item,i.owner,i.location,i.warranty,i.desc1,i.desc2,i.desc3,i.desc4,i.status,i.remark]));
+    filename='AFS_Inventory.csv';
+  } else if (currentPage==='maintenance') {
+    const data=getFilteredMaintenance();
+    csv='Department,Work Order,Date,Device,Description,Issue,Findings,Recommendation,Status,Completed\n'+
+      toCSV(data.map(m=>[m.dept,m.wo,m.dateCheck,m.device,m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete]));
+    filename='AFS_Maintenance.csv';
+  } else if (currentPage==='transfer') {
+    const data=getFilteredTransfer();
+    csv='No,Department,Date,Code,From,To,Person,Reason,Auth,Remark\n'+
+      toCSV(data.map((t,idx)=>[idx+1,t.dept,t.date,t.code,t.from,t.to,t.pic,t.reason,t.auth,t.remark]));
+    filename='AFS_Transfer.csv';
+  } else if (currentPage==='software') {
+    const data=getFilteredSoftware();
+    csv='Software,Category,Version,Source,Link,Notes\n'+
+      toCSV(data.map(s=>[s.name,s.category,s.version,s.source,s.link,s.notes]));
+    filename='AFS_Software.csv';
   }
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-  showToast(`Exported ${filename}`, 'success');
+  if (!csv) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=filename; a.click();
+  showToast(`Exported ${filename}`,'success');
 }
 
-// ============================================================
-// MODAL HELPERS
-// ============================================================
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
-
-// ============================================================
-// TOAST
-// ============================================================
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
+// ==============================================================
+// SETTINGS
+// ==============================================================
+function loadSettings() {
+  document.getElementById('set-url').value=getSheetsURL();
+  document.getElementById('set-key').value=getSheetsKey();
 }
 
-// ============================================================
-// LOGIN (simple front-door gate — see note below on security level)
-// ============================================================
-// Change these to your own credentials before sharing the file.
-const APP_USERNAME = "hafiz";
-const APP_PASSWORD = "070216";
-
-function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  if (u === APP_USERNAME && p === APP_PASSWORD) {
-    document.getElementById('login-screen').style.display = 'none';
-    sessionStorage.setItem('afs_logged_in', '1');
-    init();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-  }
+function saveSettings() {
+  const url=document.getElementById('set-url').value.trim();
+  const key=document.getElementById('set-key').value.trim();
+  if (url) localStorage.setItem('afs_url',url);
+  if (key) localStorage.setItem('afs_key',key);
+  showToast('Settings saved to browser','success');
+  setSyncStatus('Ready','var(--green)');
 }
 
-// ============================================================
-// GOOGLE SHEETS BRIDGE
-// ============================================================
-// ===========================================================
-// >>> EDIT THESE TWO LINES BEFORE USING SHEETS SYNC <<<
-// 1. SHEETS_URL  -> your Apps Script Web App URL (already filled in)
-// 2. SHEETS_KEY  -> the SAME secret key you set as SECRET_KEY inside
-//                   your Apps Script. If this still says the
-//                   placeholder text below, Sync will refuse to run.
-// ===========================================================
-const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwdZ0dkQJnYJsmIXVhT9VqP5oZ9SRCX-9OznIYWeq0C__-aA_hmrrGEV2lI_DQa93_M/exec";
-const SHEETS_KEY = "Afadmin1"; // <-- replace this text only, keep the quotes
-
-function setSyncStatus(text, color) {
-  const el = document.getElementById('sync-status');
-  if (el) { el.textContent = '●  ' + text; el.style.color = color || 'var(--text2)'; }
+async function changePassword() {
+  const cur=document.getElementById('set-cur-pass').value;
+  const nw=document.getElementById('set-new-pass').value;
+  const conf=document.getElementById('set-conf-pass').value;
+  if (!cur||!nw||!conf) { showToast('Fill in all fields','error'); return; }
+  if (nw!==conf) { showToast('New passwords do not match','error'); return; }
+  if (!isSheetsConnected()) { showToast('Sheets not connected','error'); return; }
+  // Verify current password first
+  const check=await fetch(`${getSheetsURL()}?action=login&username=${encodeURIComponent(currentUser)}&password=${encodeURIComponent(cur)}&key=${getSheetsKey()}`).then(r=>r.json());
+  if (!check.success) { showToast('Current password is incorrect','error'); return; }
+  // Read all users, update, write back
+  const usersData=await fetch(`${getSheetsURL()}?action=read&sheet=Users&key=${getSheetsKey()}`).then(r=>r.json());
+  if (!usersData.data) { showToast('Could not read users','error'); return; }
+  const users=usersData.data;
+  const user=users.find(u=>u.Username===currentUser);
+  if (user) user.Password=nw;
+  await fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Users',key:getSheetsKey(),records:JSON.stringify(users)})});
+  showToast('Password updated successfully','success');
+  ['set-cur-pass','set-new-pass','set-conf-pass'].forEach(id=>document.getElementById(id).value='');
 }
 
-function isSheetsConnected() {
-  return SHEETS_URL && SHEETS_KEY && SHEETS_KEY !== "AFadmin1";
-}
-
-// One-time button: pushes whatever is currently loaded in the app
-// (your original 79/49/12 records, or anything since) up to Google
-// Sheets WITHOUT pulling/overwriting first. Use this once, the very
-// first time you connect Sheets, so your existing data seeds the sheet
-// instead of being wiped by an empty sheet on first Sync.
-async function initialPushToSheets() {
-  if (!isSheetsConnected()) {
-    showToast('Set SHEETS_KEY in the code first — see comment near SHEETS_URL', 'error');
-    return;
-  }
-  if (!confirm('This will upload all current Inventory, Maintenance, and Transfer records to your Google Sheet, overwriting whatever is there now. Continue?')) return;
-  await pushToSheets();
-  showToast('Existing data pushed to Google Sheets', 'success');
+// ==============================================================
+// GOOGLE SHEETS SYNC
+// ==============================================================
+function setSyncStatus(text,color) {
+  const el=document.getElementById('sync-status');
+  if (el) { el.textContent='● '+text; el.style.color=color||'var(--text2)'; }
 }
 
 async function syncFromSheets() {
-  if (!isSheetsConnected()) {
-    showToast('Google Sheets not connected yet — set SHEETS_KEY in the code', 'error');
-    return;
-  }
-  setSyncStatus('Syncing...', 'var(--yellow)');
+  if (!isSheetsConnected()) { showToast('Go to Settings and enter your Sheets key first','error'); return; }
+  setSyncStatus('Syncing...','var(--yellow)');
   try {
-    const [invRes, maintRes, transRes, softRes] = await Promise.all([
-      fetch(`${SHEETS_URL}?action=read&sheet=Inventory&key=${SHEETS_KEY}`).then(r => r.json()),
-      fetch(`${SHEETS_URL}?action=read&sheet=Maintenance&key=${SHEETS_KEY}`).then(r => r.json()),
-      fetch(`${SHEETS_URL}?action=read&sheet=Transfer&key=${SHEETS_KEY}`).then(r => r.json()),
-      fetch(`${SHEETS_URL}?action=read&sheet=Software&key=${SHEETS_KEY}`).then(r => r.json()).catch(() => ({data: []})),
+    const [invR,maintR,transR,softR]=await Promise.all([
+      fetch(`${getSheetsURL()}?action=read&sheet=Inventory&key=${getSheetsKey()}`).then(r=>r.json()),
+      fetch(`${getSheetsURL()}?action=read&sheet=Maintenance&key=${getSheetsKey()}`).then(r=>r.json()),
+      fetch(`${getSheetsURL()}?action=read&sheet=Transfer&key=${getSheetsKey()}`).then(r=>r.json()),
+      fetch(`${getSheetsURL()}?action=read&sheet=Software&key=${getSheetsKey()}`).then(r=>r.json()).catch(()=>({data:[]})),
     ]);
-    if (invRes.data && invRes.data.length) {
-      inventory = invRes.data.map(r => ({
-        id: Number(r.ID), no: Number(r.No), dept: r.Department || 'IT', owner: r.Owner, code: r.Code, location: r.Location,
-        item: r.Item, warranty: r.Warranty || '', desc1: r.Desc1, desc2: r.Desc2, desc3: r.Desc3, desc4: r.Desc4, desc5: r.Desc5,
-        status: r.Status, remark: r.Remark
-      }));
-      nextInvId = Math.max(...inventory.map(i => i.id), 0) + 1;
+    if (invR.data?.length) {
+      inventory=invR.data.map(r=>({id:+r.ID,no:+r.No,dept:r.Department||'IT',owner:r.Owner,code:r.Code,location:r.Location,
+        item:r.Item,warranty:r.Warranty||''  ,desc1:r.Desc1,desc2:r.Desc2,desc3:r.Desc3,desc4:r.Desc4,desc5:r.Desc5,status:r.Status,remark:r.Remark}));
+      nextInvId=Math.max(...inventory.map(i=>i.id),0)+1;
     }
-    if (maintRes.data && maintRes.data.length) {
-      maintenance = maintRes.data.map(r => ({
-        id: Number(r.ID), dept: r.Department || 'IT', wo: r.WO, dateCheck: r.DateCheck, device: r.Device, desc: r.Desc,
-        issue: r.Issue, findings: r.Findings, recommendation: r.Recommendation, status: r.Status, dateComplete: r.DateComplete
-      }));
-      nextMaintId = Math.max(...maintenance.map(m => m.id), 0) + 1;
+    if (maintR.data?.length) {
+      maintenance=maintR.data.map(r=>({id:+r.ID,dept:r.Department||'IT',wo:r.WO,dateCheck:r.DateCheck,device:r.Device,desc:r.Desc,
+        issue:r.Issue,findings:r.Findings,recommendation:r.Recommendation,status:r.Status,dateComplete:r.DateComplete,
+        photoBefore:r.PhotoBefore||''  ,photoAfter:r.PhotoAfter||''  }));
+      nextMaintId=Math.max(...maintenance.map(m=>m.id),0)+1;
     }
-    if (transRes.data && transRes.data.length) {
-      transfers = transRes.data.map(r => ({
-        id: Number(r.ID), no: Number(r.No), dept: r.Department || 'IT', date: r.Date, code: r.Code, from: r.From, to: r.To,
-        pic: r.PIC, reason: r.Reason, auth: r.Auth, remark: r.Remark
-      }));
-      nextTransId = Math.max(...transfers.map(t => t.id), 0) + 1;
+    if (transR.data?.length) {
+      transfers=transR.data.map(r=>({id:+r.ID,no:+r.No,dept:r.Department||'IT',date:r.Date,code:r.Code,from:r.From,to:r.To,
+        pic:r.PIC,reason:r.Reason,auth:r.Auth,remark:r.Remark}));
+      nextTransId=Math.max(...transfers.map(t=>t.id),0)+1;
     }
-    if (softRes.data && softRes.data.length) {
-      software = softRes.data.map(r => ({
-        id: Number(r.ID), name: r.Name, category: r.Category, version: r.Version,
-        license: r.License, source: r.Source, link: r.Link, notes: r.Notes
-      }));
-      nextSoftId = Math.max(...software.map(s => s.id), 0) + 1;
+    if (softR.data?.length) {
+      software=softR.data.map(r=>({id:+r.ID,name:r.Name,category:r.Category,version:r.Version,
+        license:r.License,source:r.Source,link:r.Link,notes:r.Notes}));
+      nextSoftId=Math.max(...software.map(s=>s.id),0)+1;
     }
-    setSyncStatus('Synced just now', 'var(--green)');
-    showToast('Data synced from Google Sheets', 'success');
+    setSyncStatus('Synced','var(--green)');
+    showToast('Data synced from Google Sheets','success');
     renderDashboard();
-    if (currentPage === 'inventory') renderInventory();
-    if (currentPage === 'maintenance') renderMaintenance();
-    if (currentPage === 'transfer') renderTransfer();
-    if (currentPage === 'software') renderSoftware();
-  } catch (err) {
-    setSyncStatus('Sync failed', 'var(--red)');
-    showToast('Could not reach Google Sheets', 'error');
+    if (currentPage==='inventory') renderInventory();
+    if (currentPage==='maintenance') renderMaintenance();
+    if (currentPage==='transfer') renderTransfer();
+    if (currentPage==='software') renderSoftware();
+  } catch(e) {
+    setSyncStatus('Sync failed','var(--red)');
+    showToast('Could not reach Google Sheets','error');
   }
 }
 
 async function pushToSheets() {
-  if (!isSheetsConnected()) {
-    setSyncStatus('Local only', 'var(--text2)');
-    return; // silently skip — app still works locally without Sheets connected
-  }
-  setSyncStatus('Saving...', 'var(--yellow)');
+  if (!isSheetsConnected()) { setSyncStatus('Local only','var(--text2)'); return; }
+  setSyncStatus('Saving...','var(--yellow)');
   try {
     await Promise.all([
-      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
-        action: 'write', sheet: 'Inventory', key: SHEETS_KEY,
-        records: JSON.stringify(inventory.map(i => ({
-          ID: i.id, No: i.no, Department: i.dept, Owner: i.owner, Code: i.code, Location: i.location, Item: i.item,
-          Warranty: i.warranty, Desc1: i.desc1, Desc2: i.desc2, Desc3: i.desc3, Desc4: i.desc4, Desc5: i.desc5,
-          Status: i.status, Remark: i.remark
-        })))
-      })}),
-      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
-        action: 'write', sheet: 'Maintenance', key: SHEETS_KEY,
-        records: JSON.stringify(maintenance.map(m => ({
-          ID: m.id, Department: m.dept, WO: m.wo, DateCheck: m.dateCheck, Device: m.device, Desc: m.desc, Issue: m.issue,
-          Findings: m.findings, Recommendation: m.recommendation, Status: m.status, DateComplete: m.dateComplete
-        })))
-      })}),
-      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
-        action: 'write', sheet: 'Transfer', key: SHEETS_KEY,
-        records: JSON.stringify(transfers.map(t => ({
-          ID: t.id, No: t.no, Department: t.dept, Date: t.date, Code: t.code, From: t.from, To: t.to,
-          PIC: t.pic, Reason: t.reason, Auth: t.auth, Remark: t.remark
-        })))
-      })}),
-      fetch(SHEETS_URL, { method: 'POST', body: new URLSearchParams({
-        action: 'write', sheet: 'Software', key: SHEETS_KEY,
-        records: JSON.stringify(software.map(s => ({
-          ID: s.id, Name: s.name, Category: s.category, Version: s.version,
-          License: s.license, Source: s.source, Link: s.link, Notes: s.notes
-        })))
-      })}).catch(() => null), // Software tab is optional — won't break sync if missing
+      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Inventory',key:getSheetsKey(),
+        records:JSON.stringify(inventory.map(i=>({ID:i.id,No:i.no,Department:i.dept,Owner:i.owner,Code:i.code,Location:i.location,
+          Item:i.item,Warranty:i.warranty,Desc1:i.desc1,Desc2:i.desc2,Desc3:i.desc3,Desc4:i.desc4,Desc5:i.desc5,Status:i.status,Remark:i.remark})))})}),
+      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Maintenance',key:getSheetsKey(),
+        records:JSON.stringify(maintenance.map(m=>({ID:m.id,Department:m.dept,WO:m.wo,DateCheck:m.dateCheck,Device:m.device,Desc:m.desc,
+          Issue:m.issue,Findings:m.findings,Recommendation:m.recommendation,Status:m.status,DateComplete:m.dateComplete,
+          PhotoBefore:m.photoBefore||''  ,PhotoAfter:m.photoAfter||''  })))})}),
+      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Transfer',key:getSheetsKey(),
+        records:JSON.stringify(transfers.map(t=>({ID:t.id,No:t.no,Department:t.dept,Date:t.date,Code:t.code,From:t.from,To:t.to,
+          PIC:t.pic,Reason:t.reason,Auth:t.auth,Remark:t.remark})))})}),
+      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Software',key:getSheetsKey(),
+        records:JSON.stringify(software.map(s=>({ID:s.id,Name:s.name,Category:s.category,Version:s.version,
+          License:s.license,Source:s.source,Link:s.link,Notes:s.notes})))})}).catch(()=>null),
     ]);
-    setSyncStatus('Saved to Sheets', 'var(--green)');
-  } catch (err) {
-    setSyncStatus('Save failed', 'var(--red)');
-    showToast('Could not save to Google Sheets', 'error');
-  }
+    setSyncStatus('Saved','var(--green)');
+  } catch(e) { setSyncStatus('Save failed','var(--red)'); showToast('Could not save to Sheets','error'); }
 }
 
-// ============================================================
+async function initialPushToSheets() {
+  if (!isSheetsConnected()) { showToast('Set Sheets key in Settings first','error'); return; }
+  if (!confirm('Push all current data to Google Sheets? This will overwrite what is there now.')) return;
+  await pushToSheets();
+  showToast('All data pushed to Google Sheets','success');
+}
+
+// ==============================================================
+// MODAL HELPERS
+// ==============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+// ==============================================================
+// TOAST
+// ==============================================================
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=(type==='success'?'✅ ':'❌ ')+msg;
+  t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ==============================================================
 // INIT
-// ============================================================
+// ==============================================================
 function init() {
   renderDashboard();
-  if (isSheetsConnected()) {
-    syncFromSheets();
-  }
+  if (isSheetsConnected()) syncFromSheets();
 }
 
-// Show login unless already signed in this browser session
-if (sessionStorage.getItem('afs_logged_in') === '1') {
-  document.getElementById('login-screen').style.display = 'none';
-  init();
+// Check session on load
+const savedSession=sessionStorage.getItem('afs_user');
+if (savedSession) {
+  try {
+    const {username,role}=JSON.parse(savedSession);
+    loginSuccess(username,role);
+  } catch(e) { /* session invalid, show login */ }
 }
 </script>
 </body>
