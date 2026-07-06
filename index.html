@@ -741,8 +741,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
 var currentLang = localStorage.getItem('afs_lang') || 'en';
 function t(key) {
-  return (TRANSLATIONS && TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
-         (TRANSLATIONS && TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) || key;
+  try {
+    if (!key) return '';
+    var lang = typeof currentLang !== 'undefined' ? currentLang : 'en';
+    var tr = typeof TRANSLATIONS !== 'undefined' ? TRANSLATIONS : null;
+    if (!tr) return key;
+    var byLang = tr[lang] && tr[lang][key];
+    if (byLang) return byLang;
+    var byEn = tr['en'] && tr['en'][key];
+    if (byEn) return byEn;
+    return key;
+  } catch(e) { return key || ''; }
 }
 
 // ==============================================================
