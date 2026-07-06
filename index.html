@@ -1183,7 +1183,7 @@ function onInvDeptChange() {
   [1,2,3,4].forEach(n=>{
     const lbl=labels[n-1]||'';
     document.getElementById('inv-label-'+n).textContent=lbl||'Notes';
-    document.getElementById('inv-grp-'+n).style.display=lbl?''  :'none';
+    document.getElementById('inv-grp-'+n).style.display=lbl?'':'none';
   });
 }
 
@@ -1209,13 +1209,13 @@ function editInventory(id) {
   document.getElementById('inv-item').value=i.item;
   document.getElementById('inv-owner').value=i.owner;
   document.getElementById('inv-location').value=i.location;
-  document.getElementById('inv-warranty').value=i.warranty||''  ;
-  document.getElementById('inv-desc1').value=i.desc1||''  ;
-  document.getElementById('inv-desc2').value=i.desc2||''  ;
-  document.getElementById('inv-desc3').value=i.desc3||''  ;
-  document.getElementById('inv-desc4').value=i.desc4||''  ;
+  document.getElementById('inv-warranty').value=i.warranty||'';
+  document.getElementById('inv-desc1').value=i.desc1||'';
+  document.getElementById('inv-desc2').value=i.desc2||'';
+  document.getElementById('inv-desc3').value=i.desc3||'';
+  document.getElementById('inv-desc4').value=i.desc4||'';
   document.getElementById('inv-status').value=i.status;
-  document.getElementById('inv-remark').value=i.remark||''  ;
+  document.getElementById('inv-remark').value=i.remark||'';
   openInvModal(true);
 }
 
@@ -1232,7 +1232,7 @@ function saveInventory() {
     desc1:document.getElementById('inv-desc1').value,
     desc2:document.getElementById('inv-desc2').value,
     desc3:document.getElementById('inv-desc3').value,
-    desc4:document.getElementById('inv-desc4').value, desc5:''  ,
+    desc4:document.getElementById('inv-desc4').value, desc5:'',
     status:document.getElementById('inv-status').value,
     remark:document.getElementById('inv-remark').value,
   };
@@ -1306,12 +1306,12 @@ function editMaintenance(id) {
   document.getElementById('maint-device').value=m.device;
   document.getElementById('maint-desc').value=m.desc;
   document.getElementById('maint-issue').value=m.issue;
-  document.getElementById('maint-findings').value=m.findings||''  ;
-  document.getElementById('maint-recommendation').value=m.recommendation||''  ;
+  document.getElementById('maint-findings').value=m.findings||'';
+  document.getElementById('maint-recommendation').value=m.recommendation||'';
   document.getElementById('maint-status').value=m.status;
-  document.getElementById('maint-complete').value=m.dateComplete||''  ;
-  document.getElementById('maint-photo-before').value=m.photoBefore||''  ;
-  document.getElementById('maint-photo-after').value=m.photoAfter||''  ;
+  document.getElementById('maint-complete').value=m.dateComplete||'';
+  document.getElementById('maint-photo-before').value=m.photoBefore||'';
+  document.getElementById('maint-photo-after').value=m.photoAfter||'';
   // Show existing photos
   if (m.photoBefore) showPhotoPreview('before', m.photoBefore.replace('drive.google.com/file/d/','drive.google.com/thumbnail?id=').replace('/view','&sz=w400'));
   else resetPhotoPreview('before');
@@ -1404,8 +1404,8 @@ function editTransfer(id) {
   document.getElementById('trans-to').value=t.to;
   document.getElementById('trans-pic').value=t.pic;
   document.getElementById('trans-auth').value=t.auth;
-  document.getElementById('trans-reason').value=t.reason||''  ;
-  document.getElementById('trans-remark').value=t.remark||''  ;
+  document.getElementById('trans-reason').value=t.reason||'';
+  document.getElementById('trans-remark').value=t.remark||'';
   openModal('modal-transfer');
 }
 
@@ -1436,7 +1436,7 @@ function getFilteredSoftware() {
   const search=document.getElementById('soft-search').value.toLowerCase();
   const fCat=document.getElementById('soft-filter-cat').value;
   return software.filter(s=>
-    (!search||s.name.toLowerCase().includes(search)||(s.notes||''  ).toLowerCase().includes(search))&&(!fCat||s.category===fCat));
+    (!search||s.name.toLowerCase().includes(search)||(s.notes||'').toLowerCase().includes(search))&&(!fCat||s.category===fCat));
 }
 
 function renderSoftware() {
@@ -1477,11 +1477,11 @@ function editSoftware(id) {
   document.getElementById('soft-edit-id').value=id;
   document.getElementById('soft-name').value=s.name;
   document.getElementById('soft-category').value=s.category;
-  document.getElementById('soft-version').value=s.version||''  ;
-  document.getElementById('soft-license').value=s.license||''  ;
+  document.getElementById('soft-version').value=s.version||'';
+  document.getElementById('soft-license').value=s.license||'';
   document.getElementById('soft-source').value=s.source;
   document.getElementById('soft-link').value=s.link;
-  document.getElementById('soft-notes').value=s.notes||''  ;
+  document.getElementById('soft-notes').value=s.notes||'';
   openModal('modal-software');
 }
 
@@ -1581,8 +1581,8 @@ function openAddModal() {
     document.getElementById('trans-date').value=new Date().toISOString().split('T')[0];
     document.getElementById('trans-dept').value=globalDept||'IT';
     ['trans-code','trans-from','trans-to','trans-reason','trans-remark'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('trans-pic').value=currentUser||''  ;
-    document.getElementById('trans-auth').value=currentUser||''  ;
+    document.getElementById('trans-pic').value=currentUser||'';
+    document.getElementById('trans-auth').value=currentUser||'';
     openModal('modal-transfer');
   } else if (currentPage==='software') {
     document.getElementById('soft-modal-title').textContent='Add Software';
@@ -1630,7 +1630,7 @@ function renderPagination(prefix, total, current, onChange) {
 // ==============================================================
 function exportData() {
   let csv='',filename='';
-  const toCSV=rows=>rows.map(r=>r.map(v=>`"${(v||''  ).toString().replace(/"/g,'''')}"`).join(',')).join('\n');
+  const toCSV=rows=>rows.map(r=>r.map(v=>'"'+(v||'').toString().replace(/"/g,"'")+('"')).join(',')).join('\n');
   if (currentPage==='inventory') {
     const data=getFilteredInventory();
     csv='No,Department,Code,Item,Owner,Location,Warranty,Detail1,Detail2,Detail3,Detail4,Status,Remark\n'+
@@ -1717,13 +1717,13 @@ async function syncFromSheets() {
     ]);
     if (invR.data?.length) {
       inventory=invR.data.map(r=>({id:+r.ID,no:+r.No,dept:r.Department||'IT',owner:r.Owner,code:r.Code,location:r.Location,
-        item:r.Item,warranty:r.Warranty||''  ,desc1:r.Desc1,desc2:r.Desc2,desc3:r.Desc3,desc4:r.Desc4,desc5:r.Desc5,status:r.Status,remark:r.Remark}));
+        item:r.Item,warranty:r.Warranty||'',desc1:r.Desc1,desc2:r.Desc2,desc3:r.Desc3,desc4:r.Desc4,desc5:r.Desc5,status:r.Status,remark:r.Remark}));
       nextInvId=Math.max(...inventory.map(i=>i.id),0)+1;
     }
     if (maintR.data?.length) {
       maintenance=maintR.data.map(r=>({id:+r.ID,dept:r.Department||'IT',wo:r.WO,dateCheck:r.DateCheck,device:r.Device,desc:r.Desc,
         issue:r.Issue,findings:r.Findings,recommendation:r.Recommendation,status:r.Status,dateComplete:r.DateComplete,
-        photoBefore:r.PhotoBefore||''  ,photoAfter:r.PhotoAfter||''  }));
+        photoBefore:r.PhotoBefore||'',photoAfter:r.PhotoAfter||''}));
       nextMaintId=Math.max(...maintenance.map(m=>m.id),0)+1;
     }
     if (transR.data?.length) {
@@ -1760,7 +1760,7 @@ async function pushToSheets() {
       fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Maintenance',key:getSheetsKey(),
         records:JSON.stringify(maintenance.map(m=>({ID:m.id,Department:m.dept,WO:m.wo,DateCheck:m.dateCheck,Device:m.device,Desc:m.desc,
           Issue:m.issue,Findings:m.findings,Recommendation:m.recommendation,Status:m.status,DateComplete:m.dateComplete,
-          PhotoBefore:m.photoBefore||''  ,PhotoAfter:m.photoAfter||''  })))})}),
+          PhotoBefore:m.photoBefore||'',PhotoAfter:m.photoAfter||''})))})}),
       fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Transfer',key:getSheetsKey(),
         records:JSON.stringify(transfers.map(t=>({ID:t.id,No:t.no,Department:t.dept,Date:t.date,Code:t.code,From:t.from,To:t.to,
           PIC:t.pic,Reason:t.reason,Auth:t.auth,Remark:t.remark})))})}),
