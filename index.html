@@ -737,6 +737,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 <div class="toast" id="toast"></div>
 
 <script>
+// LANGUAGE HELPERS — must be first
+
+var currentLang = localStorage.getItem('afs_lang') || 'en';
+function t(key) {
+  return (TRANSLATIONS && TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
+         (TRANSLATIONS && TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) || key;
+}
+
 // ==============================================================
 // CONFIGURATION — stored in localStorage (not in source code!)
 // ==============================================================
@@ -750,9 +758,9 @@ function isSheetsConnected() { return getSheetsURL() && getSheetsKey(); }
 // ==============================================================
 // LANGUAGE / TRANSLATION SYSTEM
 // ==============================================================
-let currentLang = localStorage.getItem('afs_lang') || 'en';
+var currentLang = localStorage.getItem('afs_lang') || 'en';
 
-const TRANSLATIONS = {
+var TRANSLATIONS = {
   en: {
     // Sidebar
     'nav.dashboard': 'Dashboard', 'nav.records': 'Records', 'nav.inventory': 'Inventory',
