@@ -1140,10 +1140,7 @@ var TRANSLATIONS = {
   }
 };
 
-function t(key) {
-  return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
-         (TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) || key;
-}
+// t() defined earlier in script
 
 function setLanguage(lang) {
   currentLang = lang;
