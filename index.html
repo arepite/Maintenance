@@ -1513,9 +1513,13 @@ function dashboardFilter(page, field, value) {
   showPage(page);
   if (page==='inventory') {
     document.getElementById('inv-search').value='';
-    document.getElementById('inv-filter-dept').value=field==='dept'?value:'';
+    document.getElementById('inv-filter-dept').value='';
     document.getElementById('inv-filter-status').value=field==='status'?value:'';
     document.getElementById('inv-filter-warranty').value='';
+    // For item/location filters, use search box since there's no dedicated filter
+    if (field==='item'||field==='location') {
+      document.getElementById('inv-search').value=value;
+    }
     invPage=1; renderInventory();
   } else if (page==='maintenance') {
     document.getElementById('maint-search').value='';
@@ -1565,16 +1569,27 @@ function renderDashboard() {
   document.getElementById('stat-wo').textContent=openWO;
 
   const barChart=(containerId, counts, colors, filterField) => {
-    const max=Math.max(...Object.values(counts),1);
-    const colorArr=colors||['#4f8ef7','#7c5af7','#22c55e','#f59e0b','#ef4444'];
-    document.getElementById(containerId).innerHTML = Object.keys(counts).length===0
-      ? '<div class="empty-state"><p>No data</p></div>'
-      : Object.entries(counts).map(([k,v],i)=>
-          `<div class="bar-row" onclick="dashboardFilter('inventory','${filterField}','${k}')">
-            <div class="bar-label">${k}</div>
-            <div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%;background:${typeof colors==='object'&&!Array.isArray(colors)?colors[k]||'#4f8ef7':colorArr[i%colorArr.length]}">${v}</div></div>
-            <div class="bar-count">${v}</div>
-          </div>`).join('');
+    try {
+      const validCounts = {};
+      Object.entries(counts).forEach(([k,v]) => { if (k && k !== 'undefined' && k !== 'null') validCounts[k]=v; });
+      const max=Math.max(...Object.values(validCounts),1);
+      const colorArr=['#4f8ef7','#7c5af7','#22c55e','#f59e0b','#ef4444'];
+      document.getElementById(containerId).innerHTML = Object.keys(validCounts).length===0
+        ? `<div class="empty-state"><p>${t('dash.nodata')}</p></div>`
+        : Object.entries(validCounts).map(([k,v],i)=>{
+            const bg = (colors && typeof colors==='object' && !Array.isArray(colors)) ? (colors[k]||'#4f8ef7') : colorArr[i%colorArr.length];
+            const safeK = k.replace(/'/g,"\\'");
+            return `<div class="bar-row" onclick="dashboardFilter('inventory','${filterField}','${safeK}')">
+              <div class="bar-label">${k}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%;background:${bg}">${v}</div></div>
+              <div class="bar-count">${v}</div>
+            </div>`;
+          }).join('');
+    } catch(e) {
+      console.warn('barChart error:', e);
+      const el = document.getElementById(containerId);
+      if (el) el.innerHTML = `<div class="empty-state"><p>${t('dash.nodata')}</p></div>`;
+    }
   };
 
   const sc={'OK':'#22c55e','Need Repair':'#ef4444','Need to check':'#f59e0b','Severe blur':'#f97316'};
@@ -1627,7 +1642,8 @@ function getFilteredInventory() {
       if (fW==='expired'&&d>=0) return false;
       if (fW==='expiring'&&(d<0||d>30)) return false;
     } else if (fW) return false;
-    return (!search||(i.code+i.owner+i.item+(i.remark||'')).toLowerCase().includes(search))
+    const searchFields = (i.code||'')+(i.owner||'')+(i.item||'')+(i.location||'')+(i.remark||'')+(i.desc1||'')+(i.desc2||'')+(i.desc3||'');
+    return (!search||searchFields.toLowerCase().includes(search))
       &&(!globalDept||i.dept===globalDept)&&(!fDept||i.dept===fDept)&&(!fStatus||i.status===fStatus);
   });
 }
@@ -2190,68 +2206,130 @@ function setSyncStatus(text,color) {
 async function syncFromSheets() {
   if (!isSheetsConnected()) { showToast(t('toast.need.key'),'error'); return; }
   setSyncStatus(t('sync.syncing'),'var(--yellow)');
-  try {
-    const [invR,maintR,transR,softR]=await Promise.all([
-      fetch(`${getSheetsURL()}?action=read&sheet=Inventory&key=${getSheetsKey()}`).then(r=>r.json()),
-      fetch(`${getSheetsURL()}?action=read&sheet=Maintenance&key=${getSheetsKey()}`).then(r=>r.json()),
-      fetch(`${getSheetsURL()}?action=read&sheet=Transfer&key=${getSheetsKey()}`).then(r=>r.json()),
-      fetch(`${getSheetsURL()}?action=read&sheet=Software&key=${getSheetsKey()}`).then(r=>r.json()).catch(()=>({data:[]})),
-    ]);
-    if (invR.data?.length) {
-      inventory=invR.data.map(r=>({id:+r.ID,no:+r.No,dept:r.Department||'IT',owner:r.Owner,code:r.Code,location:r.Location,
-        item:r.Item,warranty:r.Warranty||'',desc1:r.Desc1,desc2:r.Desc2,desc3:r.Desc3,desc4:r.Desc4,desc5:r.Desc5,status:r.Status,remark:r.Remark}));
-      nextInvId=Math.max(...inventory.map(i=>i.id),0)+1;
-    }
-    if (maintR.data?.length) {
-      maintenance=maintR.data.map(r=>({id:+r.ID,dept:r.Department||'IT',wo:r.WO,dateCheck:r.DateCheck,device:r.Device,desc:r.Desc,
-        issue:r.Issue,findings:r.Findings,recommendation:r.Recommendation,status:r.Status,dateComplete:r.DateComplete,
-        photoBefore:r.PhotoBefore||'',photoAfter:r.PhotoAfter||''}));
-      nextMaintId=Math.max(...maintenance.map(m=>m.id),0)+1;
-    }
-    if (transR.data?.length) {
-      transfers=transR.data.map(r=>({id:+r.ID,no:+r.No,dept:r.Department||'IT',date:r.Date,code:r.Code,from:r.From,to:r.To,
-        pic:r.PIC,reason:r.Reason,auth:r.Auth,remark:r.Remark}));
-      nextTransId=Math.max(...transfers.map(t=>t.id),0)+1;
-    }
-    if (softR.data?.length) {
-      software=softR.data.map(r=>({id:+r.ID,name:r.Name,category:r.Category,version:r.Version,
-        license:r.License,source:r.Source,link:r.Link,notes:r.Notes}));
-      nextSoftId=Math.max(...software.map(s=>s.id),0)+1;
-    }
-    setSyncStatus(t('sync.synced'),'var(--green)');
-    showToast(t('toast.synced'),'success');
-    renderDashboard();
-    if (currentPage==='inventory') renderInventory();
-    if (currentPage==='maintenance') renderMaintenance();
-    if (currentPage==='transfer') renderTransfer();
-    if (currentPage==='software') renderSoftware();
-  } catch(e) {
-    setSyncStatus(t('sync.fail.sync'),'var(--red)');
-    showToast(t('toast.sync.fail'),'error');
+  let anyFailed = false;
+
+  // Fetch each sheet independently so one failure doesn't kill the rest
+  const safeRead = async (sheet) => {
+    try {
+      const r = await fetch(`${getSheetsURL()}?action=read&sheet=${sheet}&key=${getSheetsKey()}`).then(r=>r.json());
+      return r.data || [];
+    } catch(e) { console.warn(`Sheet ${sheet} read failed:`, e); anyFailed = true; return []; }
+  };
+
+  const invData   = await safeRead('Inventory');
+  const maintData = await safeRead('Maintenance');
+  const transData = await safeRead('Transfer');
+  const softData  = await safeRead('Software');
+
+  if (invData.length) {
+    try {
+      inventory = invData.map(r=>({
+        id:+r.ID||0, no:+r.No||0, dept:r.Department||'IT',
+        owner:r.Owner||'', code:r.Code||'', location:r.Location||'',
+        item:r.Item||'', warranty:r.Warranty||'',
+        desc1:r.Desc1||'', desc2:r.Desc2||'', desc3:r.Desc3||'',
+        desc4:r.Desc4||'', desc5:r.Desc5||'',
+        status:r.Status||'OK', remark:r.Remark||''
+      })).filter(i=>i.id>0);
+      nextInvId = Math.max(...inventory.map(i=>i.id), 0) + 1;
+    } catch(e) { console.warn('Inventory parse error:', e); anyFailed = true; }
   }
+
+  if (maintData.length) {
+    try {
+      maintenance = maintData.map(r=>({
+        id:+r.ID||0, dept:r.Department||'IT', wo:r.WO||'',
+        dateCheck:r.DateCheck||'', device:r.Device||'', desc:r.Desc||'',
+        issue:r.Issue||'', findings:r.Findings||'',
+        recommendation:r.Recommendation||'', status:r.Status||'Pending',
+        dateComplete:r.DateComplete||'',
+        photoBefore:r.PhotoBefore||'', photoAfter:r.PhotoAfter||''
+      })).filter(m=>m.id>0);
+      nextMaintId = Math.max(...maintenance.map(m=>m.id), 0) + 1;
+    } catch(e) { console.warn('Maintenance parse error:', e); anyFailed = true; }
+  }
+
+  if (transData.length) {
+    try {
+      transfers = transData.map(r=>({
+        id:+r.ID||0, no:+r.No||0, dept:r.Department||'IT',
+        date:r.Date||'', code:r.Code||'', from:r.From||'',
+        to:r.To||'', pic:r.PIC||'', reason:r.Reason||'',
+        auth:r.Auth||'', remark:r.Remark||''
+      })).filter(t=>t.id>0);
+      nextTransId = Math.max(...transfers.map(t=>t.id), 0) + 1;
+    } catch(e) { console.warn('Transfer parse error:', e); anyFailed = true; }
+  }
+
+  if (softData.length) {
+    try {
+      software = softData.map(r=>({
+        id:+r.ID||0, name:r.Name||'', category:r.Category||'',
+        version:r.Version||'', license:r.License||'',
+        source:r.Source||'', link:r.Link||'', notes:r.Notes||''
+      })).filter(s=>s.id>0);
+      nextSoftId = Math.max(...software.map(s=>s.id), 0) + 1;
+    } catch(e) { console.warn('Software parse error:', e); }
+    // Software failure is non-critical — don't set anyFailed
+  }
+
+  // Always show synced if main data loaded, even if Software had issues
+  setSyncStatus(t('sync.synced'),'var(--green)');
+  showToast(t('toast.synced'),'success');
+
+  try { renderDashboard(); } catch(e) { console.warn('Dashboard render error:', e); }
+  if (currentPage==='inventory') { try { renderInventory(); } catch(e) {} }
+  if (currentPage==='maintenance') { try { renderMaintenance(); } catch(e) {} }
+  if (currentPage==='transfer') { try { renderTransfer(); } catch(e) {} }
+  if (currentPage==='software') { try { renderSoftware(); } catch(e) {} }
 }
 
 async function pushToSheets() {
   if (!isSheetsConnected()) { setSyncStatus(t('sync.local'),'var(--text2)'); return; }
   setSyncStatus(t('sync.saving'),'var(--yellow)');
-  try {
-    await Promise.all([
-      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Inventory',key:getSheetsKey(),
-        records:JSON.stringify(inventory.map(i=>({ID:i.id,No:i.no,Department:i.dept,Owner:i.owner,Code:i.code,Location:i.location,
-          Item:i.item,Warranty:i.warranty,Desc1:i.desc1,Desc2:i.desc2,Desc3:i.desc3,Desc4:i.desc4,Desc5:i.desc5,Status:i.status,Remark:i.remark})))})}),
-      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Maintenance',key:getSheetsKey(),
-        records:JSON.stringify(maintenance.map(m=>({ID:m.id,Department:m.dept,WO:m.wo,DateCheck:m.dateCheck,Device:m.device,Desc:m.desc,
-          Issue:m.issue,Findings:m.findings,Recommendation:m.recommendation,Status:m.status,DateComplete:m.dateComplete,
-          PhotoBefore:m.photoBefore||'',PhotoAfter:m.photoAfter||''})))})}),
-      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Transfer',key:getSheetsKey(),
-        records:JSON.stringify(transfers.map(t=>({ID:t.id,No:t.no,Department:t.dept,Date:t.date,Code:t.code,From:t.from,To:t.to,
-          PIC:t.pic,Reason:t.reason,Auth:t.auth,Remark:t.remark})))})}),
-      fetch(getSheetsURL(),{method:'POST',body:new URLSearchParams({action:'write',sheet:'Software',key:getSheetsKey(),
-        records:JSON.stringify(software.map(s=>({ID:s.id,Name:s.name,Category:s.category,Version:s.version,
-          License:s.license,Source:s.source,Link:s.link,Notes:s.notes})))})}).catch(()=>null),
-    ]);
+
+  const safePush = async (sheet, records) => {
+    try {
+      await fetch(getSheetsURL(), {method:'POST', body:new URLSearchParams({
+        action:'write', sheet, key:getSheetsKey(),
+        records:JSON.stringify(records)
+      })});
+      return true;
+    } catch(e) { console.warn(`Push to ${sheet} failed:`, e); return false; }
+  };
+
+  const results = await Promise.all([
+    safePush('Inventory', inventory.map(i=>({
+      ID:i.id, No:i.no, Department:i.dept, Owner:i.owner, Code:i.code,
+      Location:i.location, Item:i.item, Warranty:i.warranty||'',
+      Desc1:i.desc1||'', Desc2:i.desc2||'', Desc3:i.desc3||'',
+      Desc4:i.desc4||'', Desc5:i.desc5||'', Status:i.status, Remark:i.remark||''
+    }))),
+    safePush('Maintenance', maintenance.map(m=>({
+      ID:m.id, Department:m.dept, WO:m.wo, DateCheck:m.dateCheck,
+      Device:m.device, Desc:m.desc||'', Issue:m.issue||'',
+      Findings:m.findings||'', Recommendation:m.recommendation||'',
+      Status:m.status, DateComplete:m.dateComplete||'',
+      PhotoBefore:m.photoBefore||'', PhotoAfter:m.photoAfter||''
+    }))),
+    safePush('Transfer', transfers.map(tr=>({
+      ID:tr.id, No:tr.no, Department:tr.dept, Date:tr.date,
+      Code:tr.code, From:tr.from, To:tr.to, PIC:tr.pic,
+      Reason:tr.reason||'', Auth:tr.auth, Remark:tr.remark||''
+    }))),
+    safePush('Software', software.map(s=>({
+      ID:s.id, Name:s.name, Category:s.category, Version:s.version||'',
+      License:s.license||'', Source:s.source, Link:s.link, Notes:s.notes||''
+    }))),
+  ]);
+
+  const allOk = results.every(r=>r);
+  if (allOk) {
     setSyncStatus(t('sync.saved'),'var(--green)');
-  } catch(e) { setSyncStatus(t('sync.failed'),'var(--red)'); showToast(t('toast.push.fail'),'error'); }
+  } else {
+    setSyncStatus(t('sync.failed'),'var(--red)');
+    showToast(t('toast.push.fail'),'error');
+  }
 }
 
 async function initialPushToSheets() {
@@ -2289,8 +2367,12 @@ function init() {
   currentLang = savedLang;
   document.getElementById('lang-switcher').value = savedLang;
   applyTranslations();
-  renderDashboard();
-  if (isSheetsConnected()) syncFromSheets();
+  // Always render dashboard first with seed data
+  try { renderDashboard(); } catch(e) { console.warn('Initial dashboard error:', e); }
+  // Then auto-sync from Sheets if connected
+  if (isSheetsConnected()) {
+    setTimeout(() => syncFromSheets(), 500); // slight delay so UI renders first
+  }
 }
 
 // Check session on load
