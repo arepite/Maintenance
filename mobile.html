@@ -216,7 +216,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
           <div class="stat-label">Operational</div>
           <div class="stat-value" id="m-stat-ok">0</div>
         </div>
-        <div class="stat-card red" onclick="mDashFilter('inventory','Need Repair')" style="cursor:pointer">
+        <div class="stat-card red" onclick="mDashFilter('inventory','NOT_OK')" style="cursor:pointer">
           <div class="stat-label">Need Attention</div>
           <div class="stat-value" id="m-stat-issues">0</div>
         </div>
@@ -637,14 +637,21 @@ function mRenderInventory(statusFilter) {
   let data = mInventory;
   if (mDeptFilter) data = data.filter(i=>i.dept===mDeptFilter);
   if (mInvFilter) data = data.filter(i=>i.dept===mInvFilter);
-  if (mInvStatusFilter) data = data.filter(i=>i.status===mInvStatusFilter);
+  if (mInvStatusFilter === 'OK') {
+    data = data.filter(i=>i.status==='OK');
+  } else if (mInvStatusFilter === 'NOT_OK') {
+    data = data.filter(i=>i.status!=='OK');
+  } else if (mInvStatusFilter) {
+    data = data.filter(i=>i.status===mInvStatusFilter);
+  }
   if (search) data = data.filter(i=>(i.code+i.owner+i.item+i.location+(i.remark||'')).toLowerCase().includes(search));
   const list = document.getElementById('m-inv-list');
 
   // Show active status filter indicator if filtering
+  const filterLabel = mInvStatusFilter==='NOT_OK' ? 'Need Attention (all)' : mInvStatusFilter;
   const filterNote = mInvStatusFilter
     ? `<div style="background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.2);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;display:flex;justify-content:space-between;align-items:center">
-        <span>Filtered: <strong>${mInvStatusFilter}</strong></span>
+        <span>Filtered: <strong>${filterLabel}</strong></span>
         <span onclick="mRenderInventory('')" style="color:var(--accent);cursor:pointer;font-weight:600">✕ Clear</span>
        </div>` : '';
 
