@@ -124,8 +124,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
 
 /* SETTINGS PAGE */
-.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
-.settings-title{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px}
+.urgency-group{display:flex;gap:10px;margin-top:4px}
+.urgency-btn{flex:1;padding:12px 6px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;text-align:center;background:var(--surface2);color:var(--text2);transition:all .15s}
+.urgency-btn:active{opacity:.8}
+.sel-urgent{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red)}
+.sel-medium{background:rgba(245,158,11,.15);color:var(--yellow);border-color:var(--yellow)}
+.sel-normal{background:rgba(34,197,94,.15);color:var(--green);border-color:var(--green)}
 </style>
 </head>
 <body>
@@ -237,6 +241,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="form-group">
       <label class="form-label">Issue / Problem *</label>
       <textarea class="form-textarea" id="m-qt-issue" placeholder="Describe the problem..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Urgency</label>
+      <div class="urgency-group">
+        <div class="urgency-btn" id="m-urg-urgent" onclick="mSelectUrgency('Urgent')">🔴 Urgent</div>
+        <div class="urgency-btn" id="m-urg-medium" onclick="mSelectUrgency('Medium')">🟡 Medium</div>
+        <div class="urgency-btn sel-normal" id="m-urg-normal" onclick="mSelectUrgency('Not Urgent')">🟢 Not Urgent</div>
+      </div>
+      <input type="hidden" id="m-qt-urgency" value="Not Urgent">
     </div>
     <div class="form-group">
       <label class="form-label">📷 Photo (optional)</label>
@@ -606,6 +619,13 @@ function mRenderInventory() {
 // ============================================================
 // SUBMIT QUICK TICKET
 // ============================================================
+function mSelectUrgency(value) {
+  document.getElementById('m-qt-urgency').value = value;
+  document.getElementById('m-urg-urgent').className = 'urgency-btn' + (value==='Urgent'?' sel-urgent':'');
+  document.getElementById('m-urg-medium').className = 'urgency-btn' + (value==='Medium'?' sel-medium':'');
+  document.getElementById('m-urg-normal').className = 'urgency-btn' + (value==='Not Urgent'?' sel-normal':'');
+}
+
 function mResetSubmitForm() {
   document.getElementById('m-qt-device').value='';
   document.getElementById('m-qt-issue').value='';
@@ -615,6 +635,7 @@ function mResetSubmitForm() {
   document.getElementById('m-photo-uploading').style.display='none';
   document.getElementById('m-submit-btn').disabled=false;
   document.getElementById('m-submit-btn').textContent='⚡ Submit Ticket';
+  mSelectUrgency('Not Urgent');
 }
 
 async function mHandlePhoto(input) {
@@ -657,6 +678,8 @@ async function mSubmitTicket() {
   if (!device||!issue) { mShowToast('Device code and issue are required','error'); return; }
   const btn = document.getElementById('m-submit-btn');
   btn.disabled=true; btn.textContent='Submitting...';
+  const urgency = document.getElementById('m-qt-urgency').value || 'Not Urgent';
+  const urgencyEmoji = urgency==='Urgent'?'🔴':urgency==='Medium'?'🟡':'🟢';
   const qtNums = mMaintenance.filter(m=>m.wo.startsWith('QT')).map(m=>+m.wo.replace('QT',''));
   const nextNum = qtNums.length ? Math.max(...qtNums)+1 : 1;
   const wo = 'QT'+String(nextNum).padStart(4,'0');
@@ -665,7 +688,8 @@ async function mSubmitTicket() {
     id: mNextMaintId++, dept, wo,
     dateCheck: new Date().toISOString().split('T')[0],
     device, desc: match?match.item:'',
-    issue, findings:'', recommendation:'',
+    issue: '['+urgencyEmoji+' '+urgency+'] '+issue,
+    findings:'', recommendation:'',
     status:'Pending', dateComplete:'',
     photoBefore: document.getElementById('m-qt-photo-url').value,
     photoAfter:''
@@ -742,4 +766,3 @@ if (mSaved) {
 </script>
 </body>
 </html>
-
