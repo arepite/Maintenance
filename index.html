@@ -120,7 +120,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .empty-state p{font-size:14px}
 .role-badge-admin{background:rgba(79,142,247,.2);color:var(--accent);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
 .role-badge-staff{background:rgba(34,197,94,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.warranty-ok{color:var(--green);font-size:12px}
+.urgency-group { display:flex; gap:10px; margin-top:4px; }
+.urgency-btn {
+  flex:1; padding:10px 8px; border-radius:8px; font-size:13px; font-weight:600;
+  cursor:pointer; border:2px solid transparent; transition:all .15s; text-align:center;
+  background:var(--surface2); color:var(--text2);
+}
+.urgency-btn:hover { opacity:.85; }
+.urgency-btn.selected-urgent   { background:rgba(239,68,68,.15);  color:var(--red);    border-color:var(--red);    }
+.urgency-btn.selected-medium   { background:rgba(245,158,11,.15); color:var(--yellow); border-color:var(--yellow); }
+.urgency-btn.selected-normal   { background:rgba(34,197,94,.15);  color:var(--green);  border-color:var(--green);  }
+
 .warranty-warn{color:var(--yellow);font-size:12px;font-weight:600}
 .warranty-exp{color:var(--red);font-size:12px;font-weight:600}
 @media(max-width:900px){.stat-grid{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
@@ -724,10 +734,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
 <!-- FLOATING QUICK TICKET BUTTON -->
 <button id="quick-btn" onclick="openQuickTicket()" title="Quick Ticket" style="
-  position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;
-  background:var(--accent);color:#fff;font-size:24px;border:none;cursor:pointer;
-  box-shadow:0 4px 16px rgba(79,142,247,.5);z-index:500;display:flex;
-  align-items:center;justify-content:center;transition:all .2s">➕</button>
+  position:fixed;bottom:32px;right:24px;width:58px;height:58px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:26px;border:none;cursor:pointer;
+  box-shadow:0 4px 20px rgba(79,142,247,.6);z-index:9000;display:flex;
+  align-items:center;justify-content:center;transition:all .2s;
+  line-height:1">➕</button>
 
 <!-- Quick Ticket Modal -->
 <div class="modal-overlay" id="modal-quick">
@@ -760,6 +771,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
           <label class="form-label">Issue / Problem *</label>
           <textarea class="form-textarea" id="qt-issue" placeholder="Describe the problem briefly..." style="min-height:90px"></textarea>
         </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Urgency</label>
+        <div class="urgency-group" id="qt-urgency-group">
+          <div class="urgency-btn" onclick="selectUrgency('qt','Urgent')"   id="qt-urg-urgent">🔴 Urgent</div>
+          <div class="urgency-btn" onclick="selectUrgency('qt','Medium')"   id="qt-urg-medium">🟡 Medium</div>
+          <div class="urgency-btn selected-normal" onclick="selectUrgency('qt','Not Urgent')" id="qt-urg-normal">🟢 Not Urgent</div>
+        </div>
+        <input type="hidden" id="qt-urgency" value="Not Urgent">
       </div>
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">📷 Photo (optional)</label>
@@ -2424,6 +2444,17 @@ function showToast(msg, type='success') {
 // ==============================================================
 // QUICK TICKET
 // ==============================================================
+function selectUrgency(prefix, value) {
+  document.getElementById(prefix+'-urgency').value = value;
+  const map = { 'Urgent':'urgent', 'Medium':'medium', 'Not Urgent':'normal' };
+  ['urgent','medium','normal'].forEach(k => {
+    const el = document.getElementById(prefix+'-urg-'+k);
+    if (!el) return;
+    el.className = 'urgency-btn';
+    if (map[value] === k) el.classList.add('selected-'+k);
+  });
+}
+
 function openQuickTicket() {
   // Generate next QT work order number
   const qtNums = maintenance.filter(m=>m.wo.startsWith('QT')).map(m=>+m.wo.replace('QT',''));
@@ -2436,6 +2467,8 @@ function openQuickTicket() {
   document.getElementById('qt-issue').value = '';
   document.getElementById('qt-photo-url').value = '';
   document.getElementById('qt-dept').value = globalDept || 'IT';
+  // Reset urgency to default
+  selectUrgency('qt', 'Not Urgent');
   resetPhotoPreview('qt-photo');
   document.getElementById('qt-submit-btn').disabled = false;
   document.getElementById('qt-submit-btn').textContent = '⚡ Submit Ticket';
@@ -2486,6 +2519,8 @@ async function submitQuickTicket() {
   const qtNums = maintenance.filter(m=>m.wo.startsWith('QT')).map(m=>+m.wo.replace('QT',''));
   const nextNum = qtNums.length ? Math.max(...qtNums)+1 : 1;
   const wo = 'QT' + String(nextNum).padStart(4,'0');
+  const urgency = document.getElementById('qt-urgency').value || 'Not Urgent';
+  const urgencyEmoji = urgency==='Urgent'?'🔴':urgency==='Medium'?'🟡':'🟢';
 
   const match = inventory.find(i=>i.code===device);
   const newTicket = {
@@ -2493,7 +2528,8 @@ async function submitQuickTicket() {
     dept: document.getElementById('qt-dept').value,
     wo, dateCheck: new Date().toISOString().split('T')[0],
     device, desc: match ? match.item : '',
-    issue, findings: '', recommendation: '',
+    issue: `[${urgencyEmoji} ${urgency}] ${issue}`,
+    findings: '', recommendation: '',
     status: 'Pending', dateComplete: '',
     photoBefore: document.getElementById('qt-photo-url').value,
     photoAfter: ''
