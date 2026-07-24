@@ -249,7 +249,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     </div>
     <div class="form-group">
       <label class="form-label">Device / Item Code *</label>
-      <input class="form-input" id="m-qt-device" placeholder="e.g. AFS/SA/PC/001">
+      <input class="form-input" id="m-qt-device" placeholder="e.g. AFS/SA/PC/001" onblur="mAutofillDevice()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Location</label>
+      <input class="form-input" id="m-qt-location" placeholder="Auto-fills from inventory or type manually">
     </div>
     <div class="form-group">
       <label class="form-label">Issue / Problem *</label>
@@ -485,7 +489,7 @@ async function mSync() {
       id:+r.ID||0, dept:r.Department||'IT', wo:r.WO||'',
       dateCheck:r.DateCheck||'', device:r.Device||'', desc:r.Desc||'',
       issue:r.Issue||'', findings:r.Findings||'', recommendation:r.Recommendation||'',
-      status:r.Status||'Pending', dateComplete:r.DateComplete||'',
+      status:r.Status||'Pending', location:r.Location||'', dateComplete:r.DateComplete||'',
       photoBefore:r.PhotoBefore||'', photoAfter:r.PhotoAfter||''
     })).filter(m=>m.id>0);
     mNextMaintId = Math.max(...mMaintenance.map(m=>m.id), 0) + 1;
@@ -514,7 +518,7 @@ async function mPushToSheets() {
           ID:m.id, Department:m.dept, WO:m.wo, DateCheck:m.dateCheck,
           Device:m.device, Desc:m.desc, Issue:m.issue, Findings:m.findings||'',
           Recommendation:m.recommendation||'', Status:m.status,
-          DateComplete:m.dateComplete||'', PhotoBefore:m.photoBefore||'', PhotoAfter:m.photoAfter||''
+          Location:m.location||'', DateComplete:m.dateComplete||'', PhotoBefore:m.photoBefore||'', PhotoAfter:m.photoAfter||''
         })))})}),
     ]);
     return true;
@@ -572,6 +576,7 @@ function mRenderHome() {
         ${mStatusBadge(m.status)}
       </div>
       <div class="ticket-device">${m.device}${m.desc?' — '+m.desc:''}</div>
+      ${m.location?`<div style="font-size:12px;color:var(--accent);margin:2px 0">📍 ${m.location}</div>`:''}
       <div class="ticket-issue">${m.issue}</div>
       <div class="ticket-footer">
         <span class="badge badge-dept">${m.dept}</span>
@@ -608,6 +613,7 @@ function mRenderTickets() {
         ${mStatusBadge(m.status)}
       </div>
       <div class="ticket-device">${m.device}${m.desc?' — '+m.desc:''}</div>
+      ${m.location?`<div style="font-size:12px;color:var(--accent);margin:2px 0">📍 ${m.location}</div>`:''}
       <div class="ticket-issue">${m.issue}</div>
       ${m.findings?`<div style="font-size:12px;color:var(--text2);margin-top:4px">📋 ${m.findings}</div>`:''}
       ${m.photoBefore?`<div style="margin-top:8px"><a href="${m.photoBefore}" target="_blank"><img src="${m.photoBefore.includes('drive.google.com')?m.photoBefore.replace('/view','').replace('file/d/','thumbnail?id=')+'&sz=w300':m.photoBefore}" style="width:80px;height:60px;object-fit:cover;border-radius:6px" onerror="this.style.display='none'"></a></div>`:''}
@@ -678,6 +684,14 @@ function mRenderInventory(statusFilter) {
 // ============================================================
 // SUBMIT QUICK TICKET
 // ============================================================
+function mAutofillDevice() {
+  const code = document.getElementById('m-qt-device').value.trim();
+  const match = mInventory.find(i=>i.code===code);
+  if (match) {
+    document.getElementById('m-qt-location').value = match.location||'';
+  }
+}
+
 function mSelectUrgency(value) {
   document.getElementById('m-qt-urgency').value = value;
   document.getElementById('m-urg-urgent').className = 'urgency-btn' + (value==='Urgent'?' sel-urgent':'');
@@ -687,6 +701,7 @@ function mSelectUrgency(value) {
 
 function mResetSubmitForm() {
   document.getElementById('m-qt-device').value='';
+  document.getElementById('m-qt-location').value='';
   document.getElementById('m-qt-issue').value='';
   document.getElementById('m-qt-photo-url').value='';
   document.getElementById('m-photo-placeholder').style.display='block';
@@ -748,6 +763,7 @@ async function mSubmitTicket() {
     dateCheck: new Date().toISOString().split('T')[0],
     device, desc: match?match.item:'',
     issue: '['+urgencyEmoji+' '+urgency+'] '+issue,
+    location: document.getElementById('m-qt-location').value,
     findings:'', recommendation:'',
     status:'Pending', dateComplete:'',
     photoBefore: document.getElementById('m-qt-photo-url').value,
