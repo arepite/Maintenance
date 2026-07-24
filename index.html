@@ -308,7 +308,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
         <div style="overflow-x:auto">
           <table class="data-table">
             <thead><tr>
-              <th>Dept</th><th>Work Order</th><th>Date</th><th>Device</th><th>Issue</th>
+              <th>Dept</th><th>Work Order</th><th>Date</th><th>Device</th><th>Location</th><th>Issue</th>
               <th>Findings</th><th>Recommendation</th><th>Status</th><th>Completed</th><th>Photos</th><th>Actions</th>
             </tr></thead>
             <tbody id="maint-tbody"></tbody>
@@ -546,7 +546,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
         </div>
         <div class="form-group">
           <label class="form-label">Device Description</label>
-          <input class="form-input" id="maint-desc" placeholder="e.g. Dell CPU">
+          <input class="form-input" id="maint-desc" placeholder="e.g. Dell CPU or Table, Chair">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-input" id="maint-location" placeholder="Auto-fills from inventory or type manually">
         </div>
       </div>
       <div class="form-row full">
@@ -612,6 +618,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   <div class="modal">
     <div class="modal-head"><h3 id="trans-modal-title">Add Transfer Record</h3><button class="modal-close" onclick="closeModal('modal-transfer')">✕</button></div>
     <div class="modal-body">
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text2)">
+        📍 Saving this transfer will automatically update the item's location in Inventory.
+      </div>
       <input type="hidden" id="trans-edit-id">
       <div class="form-row">
         <div class="form-group">
@@ -1852,6 +1861,7 @@ function renderMaintenance() {
           <td style="font-weight:600;color:var(--accent)">${m.wo}</td>
           <td style="font-size:12px">${m.dateCheck}</td>
           <td style="font-family:monospace;font-size:12px">${m.device}</td>
+          <td style="font-size:12px;color:var(--text2)">${m.location||'—'}</td>
           <td style="max-width:140px;font-size:12px">${m.issue}</td>
           <td style="max-width:140px;font-size:12px;color:var(--text2)">${m.findings||'—'}</td>
           <td style="max-width:140px;font-size:12px;color:var(--text2)">${m.recommendation||'—'}</td>
@@ -1873,7 +1883,7 @@ function resetMaintModal() {
   document.getElementById('maint-wo').value='CM'+String(maintenance.length+1).padStart(4,'0');
   document.getElementById('maint-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('maint-dept').value=globalDept||'IT';
-  ['maint-device','maint-desc','maint-issue','maint-findings','maint-recommendation','maint-complete','maint-photo-before','maint-photo-after'].forEach(id=>document.getElementById(id).value='');
+  ['maint-device','maint-desc','maint-location','maint-issue','maint-findings','maint-recommendation','maint-complete','maint-photo-before','maint-photo-after'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('maint-status').value='Pending';
   resetPhotoPreview('before'); resetPhotoPreview('after');
 }
@@ -1887,6 +1897,7 @@ function editMaintenance(id) {
   document.getElementById('maint-date').value=m.dateCheck;
   document.getElementById('maint-device').value=m.device;
   document.getElementById('maint-desc').value=m.desc;
+  document.getElementById('maint-location').value=m.location||'';
   document.getElementById('maint-issue').value=m.issue;
   document.getElementById('maint-findings').value=m.findings||'';
   document.getElementById('maint-recommendation').value=m.recommendation||'';
@@ -1905,7 +1916,10 @@ function editMaintenance(id) {
 function autofillDevice() {
   const code=document.getElementById('maint-device').value.trim();
   const match=inventory.find(i=>i.code===code);
-  if (match) document.getElementById('maint-desc').value=match.item;
+  if (match) {
+    document.getElementById('maint-desc').value=match.item;
+    document.getElementById('maint-location').value=match.location||'';
+  }
 }
 
 function saveMaintenance() {
@@ -1917,6 +1931,7 @@ function saveMaintenance() {
     dept:document.getElementById('maint-dept').value,
     wo, dateCheck:document.getElementById('maint-date').value,
     device, desc:document.getElementById('maint-desc').value,
+    location:document.getElementById('maint-location').value,
     issue:document.getElementById('maint-issue').value,
     findings:document.getElementById('maint-findings').value,
     recommendation:document.getElementById('maint-recommendation').value,
@@ -2006,9 +2021,28 @@ function saveTransfer() {
     reason:document.getElementById('trans-reason').value,
     remark:document.getElementById('trans-remark').value,
   };
-  if (editId) { transfers[transfers.findIndex(x=>x.id==editId)]={...transfers.find(x=>x.id==editId),...obj}; showToast(t('toast.trans.updated'),'success'); }
-  else { transfers.push({id:nextTransId++,no:transfers.length+1,...obj}); showToast(t('toast.trans.added'),'success'); }
-  closeModal('modal-transfer'); renderTransfer(); pushToSheets();
+  if (editId) {
+    transfers[transfers.findIndex(x=>x.id==editId)]={...transfers.find(x=>x.id==editId),...obj};
+    showToast(t('toast.trans.updated'),'success');
+  } else {
+    transfers.push({id:nextTransId++,no:transfers.length+1,...obj});
+    showToast(t('toast.trans.added'),'success');
+  }
+  // Auto-update inventory location
+  syncInventoryLocation(code, to);
+  closeModal('modal-transfer'); renderTransfer(); renderInventory(); renderDashboard(); pushToSheets();
+}
+
+// Automatically update the inventory item's location when a transfer is saved.
+// Only updates if the item code exists in inventory.
+function syncInventoryLocation(itemCode, newLocation) {
+  const item = inventory.find(i=>i.code===itemCode);
+  if (!item) return; // item not in inventory (e.g. mouse, chair not tracked) — skip silently
+  const oldLocation = item.location;
+  item.location = newLocation;
+  if (oldLocation !== newLocation) {
+    showToast(`📍 Inventory updated: ${itemCode} → ${newLocation}`, 'success');
+  }
 }
 
 // ==============================================================
@@ -2220,8 +2254,8 @@ function exportData() {
     filename='AFS_Inventory.csv';
   } else if (currentPage==='maintenance') {
     const data=getFilteredMaintenance();
-    csv='Department,Work Order,Date,Device,Description,Issue,Findings,Recommendation,Status,Completed\n'+
-      toCSV(data.map(m=>[m.dept,m.wo,m.dateCheck,m.device,m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete]));
+    csv='Department,Work Order,Date,Device,Location,Description,Issue,Findings,Recommendation,Status,Completed\n'+
+      toCSV(data.map(m=>[m.dept,m.wo,m.dateCheck,m.device,m.location||'',m.desc,m.issue,m.findings,m.recommendation,m.status,m.dateComplete]));
     filename='AFS_Maintenance.csv';
   } else if (currentPage==='transfer') {
     const data=getFilteredTransfer();
@@ -2326,7 +2360,7 @@ async function syncFromSheets() {
         dateCheck:r.DateCheck||'', device:r.Device||'', desc:r.Desc||'',
         issue:r.Issue||'', findings:r.Findings||'',
         recommendation:r.Recommendation||'', status:r.Status||'Pending',
-        dateComplete:r.DateComplete||'',
+        location:r.Location||'', dateComplete:r.DateComplete||'',
         photoBefore:r.PhotoBefore||'', photoAfter:r.PhotoAfter||''
       })).filter(m=>m.id>0);
       nextMaintId = Math.max(...maintenance.map(m=>m.id), 0) + 1;
@@ -2393,7 +2427,7 @@ async function pushToSheets() {
       ID:m.id, Department:m.dept, WO:m.wo, DateCheck:m.dateCheck,
       Device:m.device, Desc:m.desc||'', Issue:m.issue||'',
       Findings:m.findings||'', Recommendation:m.recommendation||'',
-      Status:m.status, DateComplete:m.dateComplete||'',
+      Status:m.status, Location:m.location||'', DateComplete:m.dateComplete||'',
       PhotoBefore:m.photoBefore||'', PhotoAfter:m.photoAfter||''
     }))),
     safePush('Transfer', transfers.map(tr=>({
